@@ -1,0 +1,15 @@
+[pi-coding-agent]
+source = "npm"
+npm = "@mariozechner/pi-coding-agent"
+
+[colgrep]
+source = "github"
+github = "lightonai/next-plaid"
+use_latest_release = true
+prefix = "v"
+
+[colgrep-bin]
+source = "github"
+github = "lightonai/next-plaid"
+use_latest_release = true
+prefix = "v"
