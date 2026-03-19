@@ -1,6 +1,6 @@
-[pi-coding-agent]
-source = "npm"
-npm = "@mariozechner/pi-coding-agent"
+[__config__]
+oldver = "old.json"
+newver = "new.json"
 
 [colgrep]
 source = "github"

@@ -1,0 +1,162 @@
+name: Update AUR packages
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: aur-update
+  cancel-in-progress: false
+
+jobs:
+  check-updates:
+    runs-on: ubuntu-latest
+    outputs:
+      updates: ${{ steps.check.outputs.updates }}
+      has_updates: ${{ steps.check.outputs.has_updates }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install nvchecker
+        run: pip install nvchecker
+
+      - name: Check for updates
+        id: check
+        run: |
+          set -euo pipefail
+
+          nvchecker -c nvchecker.toml
+          UPDATES=$(nvcmp -c nvchecker.toml 2>/dev/null || true)
+
+          if [[ -n "$UPDATES" ]]; then
+            echo "Updates found:"
+            echo "$UPDATES"
+
+            UPDATES_JSON=$(echo "$UPDATES" | awk '{print "{\"name\": \"" $1 "\", \"version\": \"" $NF "\"}"}' | jq -s -c '.')
+
+            echo "updates=$UPDATES_JSON" >> "$GITHUB_OUTPUT"
+            echo "has_updates=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "updates=[]" >> "$GITHUB_OUTPUT"
+            echo "has_updates=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  publish-aur:
+    needs: check-updates
+    if: needs.check-updates.outputs.has_updates == 'true'
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:base-devel
+      options: --privileged
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJson(needs.check-updates.outputs.updates) }}
+
+    steps:
+      - name: Setup Arch environment
+        run: |
+          set -euo pipefail
+          pacman -Syu --noconfirm
+          pacman -S --noconfirm git openssh jq npm pacman-contrib python python-pip sudo patch
+          pip install nvchecker --break-system-packages
+          useradd -m builder
+          echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+
+      - uses: actions/checkout@v4
+
+      - name: Update packaging files
+        run: |
+          set -euo pipefail
+          chmod +x .github/scripts/update-package.sh
+          .github/scripts/update-package.sh "${{ matrix.package.name }}" "${{ matrix.package.version }}"
+
+      - name: Collect extra AUR assets
+        id: assets
+        run: |
+          set -euo pipefail
+          pkg="${{ matrix.package.name }}"
+          {
+            echo 'assets<<EOF'
+            echo "./$pkg/.SRCINFO"
+            if compgen -G "./$pkg/*.patch" > /dev/null; then
+              compgen -G "./$pkg/*.patch"
+            fi
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Publish ${{ matrix.package.name }} to AUR
+        uses: KSXGitHub/github-actions-deploy-aur@v3
+        with:
+          pkgname: ${{ matrix.package.name }}
+          pkgbuild: ./${{ matrix.package.name }}/PKGBUILD
+          assets: ${{ steps.assets.outputs.assets }}
+          commit_username: ${{ secrets.AUR_USERNAME }}
+          commit_email: ${{ secrets.AUR_EMAIL }}
+          ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+          commit_message: "Update to ${{ matrix.package.version }}"
+
+  commit-repo:
+    needs: [check-updates, publish-aur]
+    if: needs.check-updates.outputs.has_updates == 'true'
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:base-devel
+      options: --privileged
+    steps:
+      - name: Setup Arch environment
+        run: |
+          set -euo pipefail
+          pacman -Syu --noconfirm
+          pacman -S --noconfirm git jq npm pacman-contrib python python-pip sudo patch
+          pip install nvchecker --break-system-packages
+          useradd -m builder
+          echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Update packaging files in repository
+        env:
+          UPDATES_JSON: ${{ needs.check-updates.outputs.updates }}
+        run: |
+          set -euo pipefail
+          chmod +x .github/scripts/update-package.sh
+          echo "$UPDATES_JSON" | jq -r '.[] | [.name, .version] | @tsv' | \
+          while IFS=$'\t' read -r pkg ver; do
+            .github/scripts/update-package.sh "$pkg" "$ver"
+          done
+
+      - name: Update old.json
+        env:
+          UPDATES_JSON: ${{ needs.check-updates.outputs.updates }}
+        run: |
+          set -euo pipefail
+          nvchecker -c nvchecker.toml
+          echo "$UPDATES_JSON" | jq -r '.[].name' | while read -r pkg; do
+            nvtake -c nvchecker.toml "$pkg"
+          done
+
+      - name: Commit updates back to repository
+        env:
+          UPDATES_JSON: ${{ needs.check-updates.outputs.updates }}
+        run: |
+          set -euo pipefail
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+
+          SUMMARY=$(echo "$UPDATES_JSON" | jq -r 'map("\(.name) \(.version)") | join(", ")')
+
+          git add old.json */PKGBUILD */.SRCINFO
+          git commit -m "chore: update AUR packages (${SUMMARY})" || exit 0
+          git push
