@@ -13,3 +13,9 @@ source = "github"
 github = "lightonai/next-plaid"
 use_latest_release = true
 prefix = "v"
+
+[pi-coding-agent-bin]
+source = "github"
+github = "badlogic/pi-mono"
+use_latest_release = true
+prefix = "v"

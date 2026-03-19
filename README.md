@@ -8,6 +8,7 @@ A small collection of AUR PKGBUILDs maintained in one repository.
 | --- | --- | --- |
 | `colgrep` | source | Built locally with host-native optimizations (`-march=native`, `-mtune=native`, Rust `target-cpu=native`) |
 | `colgrep-bin` | binary | Installs the upstream prebuilt Linux x86_64 release |
+| `pi-coding-agent-bin` | binary | Installs the upstream prebuilt Linux x86_64 release from `badlogic/pi-mono` |
 
 ## Layout
 
@@ -51,7 +52,11 @@ Tracked versions are stored in:
 
 - `old.json`
 
-At the moment, automatic update tracking is enabled for the `colgrep` packages.
+Automatic update tracking is enabled for:
+
+- `colgrep`
+- `colgrep-bin`
+- `pi-coding-agent-bin`
 
 ## Required GitHub Actions secrets
 

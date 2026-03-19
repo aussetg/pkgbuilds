@@ -1,0 +1,29 @@
+# Maintainer: Guillaume Ausset <guillaume+arch@ausset.me>
+
+pkgname=pi-coding-agent-bin
+pkgver=0.60.0
+pkgrel=1
+pkgdesc="AI coding assistant with read, bash, edit, write tools"
+arch=('x86_64')
+url="https://pi.dev/"
+license=('MIT')
+depends=('glibc')
+provides=('pi' 'pi-coding-agent')
+conflicts=('pi' 'pi-coding-agent')
+source=(
+  "https://github.com/badlogic/pi-mono/releases/download/v${pkgver}/pi-linux-x64.tar.gz"
+  "LICENSE::https://raw.githubusercontent.com/badlogic/pi-mono/v${pkgver}/LICENSE"
+)
+sha256sums=(
+  '10427f29efa513f8cdf76cbf5f510a5cb0af14a8f56b5eb6675166c6f8741496'
+  '0457f5bcec3b3b211605dfb5d1a49042fd638f3686a410fe099c24a25af13c48'
+)
+
+package() {
+  install -dm755 "${pkgdir}/usr/lib/pi-coding-agent" "${pkgdir}/usr/bin"
+  cp -a "${srcdir}/pi/." "${pkgdir}/usr/lib/pi-coding-agent/"
+  ln -s ../lib/pi-coding-agent/pi "${pkgdir}/usr/bin/pi"
+
+  install -Dm644 "${srcdir}/pi/README.md" "${pkgdir}/usr/share/doc/${pkgname}/README.md"
+  install -Dm644 "${srcdir}/LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}
