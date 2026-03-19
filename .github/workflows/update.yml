@@ -1,5 +1,7 @@
 name: Update AUR packages
 
+# No-op marker to force GitHub workflow re-indexing.
+
 on:
   schedule:
     - cron: "0 */6 * * *"
