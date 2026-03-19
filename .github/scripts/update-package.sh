@@ -25,6 +25,10 @@ run_cmd() {
 
 cd "$pkgdir"
 
+if [[ $(id -u) -eq 0 ]] && id builder >/dev/null 2>&1; then
+  chown -R builder:builder "$pkgdir"
+fi
+
 sed -i "s/^pkgver=.*/pkgver=$newver/" PKGBUILD
 sed -i "s/^pkgrel=.*/pkgrel=1/" PKGBUILD
 
