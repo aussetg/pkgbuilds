@@ -12,6 +12,9 @@ concurrency:
   group: aur-update
   cancel-in-progress: false
 
+env:
+  AUR_PUBLISH_PACKAGES: '["colgrep", "colgrep-bin"]'
+
 jobs:
   check-updates:
     runs-on: ubuntu-latest
@@ -95,6 +98,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Publish ${{ matrix.package.name }} to AUR
+        if: contains(fromJson(env.AUR_PUBLISH_PACKAGES), matrix.package.name)
         uses: KSXGitHub/github-actions-deploy-aur@v3
         with:
           pkgname: ${{ matrix.package.name }}
