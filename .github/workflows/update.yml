@@ -156,8 +156,11 @@ jobs:
       - name: Commit updates back to repository
         env:
           UPDATES_JSON: ${{ needs.check-updates.outputs.updates }}
+        shell: bash
         run: |
           set -euo pipefail
+          cd "$GITHUB_WORKSPACE"
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
 
