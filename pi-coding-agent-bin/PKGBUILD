@@ -25,5 +25,8 @@ package() {
   ln -s ../lib/pi-coding-agent/pi "${pkgdir}/usr/bin/pi"
 
   install -Dm644 "${srcdir}/pi/README.md" "${pkgdir}/usr/share/doc/${pkgname}/README.md"
+  install -Dm644 "${srcdir}/pi/CHANGELOG.md" "${pkgdir}/usr/share/doc/${pkgname}/CHANGELOG.md"
+  ln -s /usr/lib/pi-coding-agent/docs "${pkgdir}/usr/share/doc/${pkgname}/docs"
+  ln -s /usr/lib/pi-coding-agent/examples "${pkgdir}/usr/share/doc/${pkgname}/examples"
   install -Dm644 "${srcdir}/LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
 }
