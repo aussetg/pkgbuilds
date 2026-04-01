@@ -6,8 +6,10 @@ A small collection of AUR PKGBUILDs maintained in one repository.
 
 | Package | Type | Notes |
 | --- | --- | --- |
+| `arcana-git` | source (VCS) | Builds the latest `master` commit from `git.sr.ht/~aussetg/arcana` locally |
 | `colgrep` | source | Built locally with host-native optimizations (`-march=native`, `-mtune=native`, Rust `target-cpu=native`) |
 | `colgrep-bin` | binary | Installs the upstream prebuilt Linux x86_64 release |
+| `obsidian-headless-bin` | npm binary | Installs the npm-published CLI and locally builds the `better-sqlite3` native addon |
 | `pi-coding-agent-bin` | binary | Installs the upstream prebuilt Linux x86_64 release from `badlogic/pi-mono` |
 
 ## Layout
@@ -56,6 +58,7 @@ Automatic update tracking is enabled for:
 
 - `colgrep`
 - `colgrep-bin`
+- `obsidian-headless-bin`
 - `pi-coding-agent-bin`
 
 ## Required GitHub Actions secrets
@@ -71,3 +74,5 @@ The SSH key must have push access to the corresponding AUR repositories.
 - `colgrep` disables LTO because upstream currently fails to link correctly with distro LTO flags.
 - `colgrep` is intentionally host-optimized and therefore should be built locally by each user.
 - `colgrep-bin` is the generic alternative for users who want a prebuilt package.
+- `obsidian-headless-bin` auto-updates are gated on npm metadata validation and a successful `makepkg` build because upstream bundles a native Node addon (`better-sqlite3`).
+- `arcana-git` tracks the latest upstream commit and is intentionally excluded from the automated release update / AUR publish workflow.

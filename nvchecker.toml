@@ -19,3 +19,7 @@ source = "github"
 github = "badlogic/pi-mono"
 use_latest_release = true
 prefix = "v"
+
+[obsidian-headless-bin]
+source = "npm"
+npm = "obsidian-headless"

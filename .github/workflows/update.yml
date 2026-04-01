@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  AUR_PUBLISH_PACKAGES: '["colgrep", "colgrep-bin"]'
+  AUR_PUBLISH_PACKAGES: '["colgrep", "colgrep-bin", "obsidian-headless-bin"]'
 
 jobs:
   check-updates:
@@ -84,6 +84,11 @@ jobs:
           set -euo pipefail
           chmod +x .github/scripts/update-package.sh
           .github/scripts/update-package.sh "${{ matrix.package.name }}" "${{ matrix.package.version }}"
+
+      - name: Validate updated package
+        run: |
+          set -euo pipefail
+          bash .github/scripts/validate-package.sh "${{ matrix.package.name }}"
 
       - name: Collect extra AUR assets
         id: assets
