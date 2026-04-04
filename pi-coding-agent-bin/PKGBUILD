@@ -1,7 +1,7 @@
 # Maintainer: Guillaume Ausset <guillaume+arch@ausset.me>
 
 pkgname=pi-coding-agent-bin
-pkgver=0.64.0
+pkgver=0.65.0
 pkgrel=1
 pkgdesc="AI coding assistant with read, bash, edit, write tools"
 arch=('x86_64')
@@ -14,7 +14,7 @@ source=(
   "https://github.com/badlogic/pi-mono/releases/download/v${pkgver}/pi-linux-x64.tar.gz"
   "LICENSE::https://raw.githubusercontent.com/badlogic/pi-mono/v${pkgver}/LICENSE"
 )
-sha256sums=('65ff76b5f96bf6c7eea49f47b036fcf5e3a1de0c0d43735d7669e904833c3fc2'
+sha256sums=('ad38c11fb6097c96eaf1e753fed7b79eb424711ff989071e773f9a8ab909e75b'
             '0457f5bcec3b3b211605dfb5d1a49042fd638f3686a410fe099c24a25af13c48')
 
 package() {
