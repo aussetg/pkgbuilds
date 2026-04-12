@@ -106,7 +106,7 @@ jobs:
 
       - name: Publish ${{ matrix.package.name }} to AUR
         if: contains(fromJson(env.AUR_PUBLISH_PACKAGES), matrix.package.name)
-        uses: KSXGitHub/github-actions-deploy-aur@v3
+        uses: KSXGitHub/github-actions-deploy-aur@v4.1.1
         with:
           pkgname: ${{ matrix.package.name }}
           pkgbuild: ./${{ matrix.package.name }}/PKGBUILD
