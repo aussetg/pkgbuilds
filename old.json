@@ -11,9 +11,9 @@
       "version": "0.0.8"
     },
     "pi-coding-agent-bin": {
-      "version": "0.67.5",
-      "gitref": "refs/tags/v0.67.5",
-      "url": "https://github.com/badlogic/pi-mono/releases/tag/v0.67.5"
+      "version": "0.67.6",
+      "gitref": "refs/tags/v0.67.6",
+      "url": "https://github.com/badlogic/pi-mono/releases/tag/v0.67.6"
     }
   }
 }
