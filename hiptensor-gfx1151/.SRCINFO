@@ -1,0 +1,19 @@
+pkgbase = hiptensor-gfx1151
+	pkgdesc = AMD C++ library for accelerating tensor primitives for rocm-gfx1151-bin
+	pkgver = 7.13.0rc2
+	pkgrel = 1
+	url = https://rocm.docs.amd.com/projects/hipTensor/en/latest/
+	arch = x86_64
+	license = MIT
+	makedepends = git
+	makedepends = cmake
+	makedepends = ninja
+	makedepends = rocm-gfx1151-bin
+	depends = rocm-gfx1151-bin
+	depends = glibc
+	depends = gcc-libs
+	options = !lto
+	source = rocm-libraries::git+https://github.com/ROCm/rocm-libraries.git#commit=f664f44c90ae22e860738f8c9793a019eb1975e1
+	sha256sums = SKIP
+
+pkgname = hiptensor-gfx1151

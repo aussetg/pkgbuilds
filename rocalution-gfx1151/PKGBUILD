@@ -1,0 +1,55 @@
+# Maintainer: Local gfx1151 ROCm add-on package
+# Based on Arch Linux rocalution packaging, adapted for rocm-gfx1151-bin.
+
+pkgname=rocalution-gfx1151
+pkgver=7.2.3
+pkgrel=1
+pkgdesc='Next generation library for iterative sparse solvers for rocm-gfx1151-bin'
+arch=('x86_64')
+url='https://rocm.docs.amd.com/projects/rocALUTION/en/latest/index.html'
+license=('MIT')
+depends=('rocm-gfx1151-bin' 'glibc' 'gcc-libs' 'openmp' 'openmpi')
+makedepends=('cmake' 'rocm-gfx1151-bin' 'openmp' 'openmpi')
+# Do not provide/conflict with "rocalution": rocm-gfx1151-bin currently declares
+# conflicts=(rocalution) while also missing the files.
+_git='https://github.com/ROCm/rocALUTION'
+source=("rocalution-$pkgver.tar.gz::$_git/archive/rocm-$pkgver.tar.gz")
+sha256sums=('6092bf6f59435b573f6d44fd4e78aa515f2e1f0c1b516f2d9f4e76a5a0fbd049')
+options=(!lto)
+
+_prepare_rocm_env() {
+  export ROCM_PATH=/opt/rocm
+  export HIP_PATH=/opt/rocm
+  export HIP_PLATFORM=amd
+  export HIP_DEVICE_LIB_PATH=/opt/rocm/lib/llvm/amdgcn/bitcode
+  export PATH="/opt/rocm/bin:/opt/rocm/lib/llvm/bin:${PATH}"
+  export HIPCC_COMPILE_FLAGS_APPEND="-parallel-jobs=$(nproc)"
+  export HIPCC_LINK_FLAGS_APPEND="-parallel-jobs=$(nproc)"
+  CXXFLAGS+=" -fcf-protection=none"
+}
+
+build() {
+  _prepare_rocm_env
+  local gpu_targets="${AMDGPU_TARGETS:-${GPU_TARGETS:-gfx1151}}"
+  local cmake_args=(
+    -Wno-dev
+    -S "rocALUTION-rocm-$pkgver"
+    -B build
+    -D CMAKE_BUILD_TYPE=Release
+    -D CMAKE_TOOLCHAIN_FILE="$srcdir/rocALUTION-rocm-$pkgver/toolchain-linux.cmake"
+    -D CMAKE_INSTALL_PREFIX=/opt/rocm
+    -D ROCM_PATH=/opt/rocm
+    -D SUPPORT_HIP=ON
+    -D SUPPORT_OMP=ON
+    -D SUPPORT_MPI=ON
+    -D BUILD_SHARED_LIBS=ON
+    -D GPU_TARGETS="$gpu_targets"
+  )
+  cmake "${cmake_args[@]}"
+  cmake --build build
+}
+
+package() {
+  DESTDIR="$pkgdir" cmake --install build
+  install -Dm644 "rocALUTION-rocm-$pkgver/LICENSE.md" "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

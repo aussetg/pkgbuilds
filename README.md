@@ -11,6 +11,12 @@ A small collection of AUR PKGBUILDs maintained in one repository.
 | `colgrep-bin` | binary | Installs the upstream prebuilt Linux x86_64 release |
 | `obsidian-headless-bin` | npm binary | Installs the npm-published CLI and locally builds the `better-sqlite3` native addon |
 | `pi-coding-agent-bin` | binary | Installs the upstream prebuilt Linux x86_64 release from `badlogic/pi-mono` |
+| `migraphx-gfx1151` | source | Add-on package for `rocm-gfx1151-bin`; installs missing MIGraphX files without conflicting with the monolithic ROCm package |
+| `mivisionx-gfx1151` | source | Add-on package for `rocm-gfx1151-bin`; installs missing MIVisionX files without conflicting with the monolithic ROCm package |
+| `rpp-gfx1151` | source | Add-on package for `rocm-gfx1151-bin`; installs missing RPP files without conflicting with the monolithic ROCm package |
+| `rocalution-gfx1151` | source | Add-on package for `rocm-gfx1151-bin`; installs missing rocALUTION files without conflicting with the monolithic ROCm package |
+| `hiptensor-gfx1151` | source | Add-on package for `rocm-gfx1151-bin`; installs missing hipTensor files without conflicting with the monolithic ROCm package |
+| `hipfort-gfx1151` | source | Add-on package for `rocm-gfx1151-bin`; installs missing hipfort files without conflicting with the monolithic ROCm package |
 
 ## Layout
 
@@ -76,3 +82,4 @@ The SSH key must have push access to the corresponding AUR repositories.
 - `colgrep-bin` is the generic alternative for users who want a prebuilt package.
 - `obsidian-headless-bin` auto-updates are gated on npm metadata validation and a successful `makepkg` build because upstream bundles a native Node addon (`better-sqlite3`).
 - `arcana-git` tracks the latest upstream commit and is intentionally excluded from the automated release update / AUR publish workflow.
+- The `*-gfx1151` ROCm packages are local add-ons for the current `rocm-gfx1151-bin` package. They deliberately do not `provide` or `conflict` with the official ROCm component names because `rocm-gfx1151-bin` currently declares conflicts/provides for those names while not shipping the files.

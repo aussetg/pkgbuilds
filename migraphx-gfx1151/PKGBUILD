@@ -1,0 +1,118 @@
+# Maintainer: Local gfx1151 ROCm add-on package
+# Based on Arch Linux migraphx packaging, adapted for rocm-gfx1151-bin / TheRock ROCm 7.13 preview.
+
+pkgname=migraphx-gfx1151
+pkgver=7.13.0rc2
+pkgrel=1
+pkgdesc="AMD's graph optimization engine for rocm-gfx1151-bin"
+arch=('x86_64')
+url="https://rocm.docs.amd.com/projects/AMDMIGraphX/en/latest/"
+license=('MIT AND (Apache-2.0 WITH LLVM-exception OR NCSA)')
+depends=(
+  rocm-gfx1151-bin
+  abseil-cpp
+  protobuf
+  sqlite
+  glibc
+  gcc-libs
+)
+makedepends=(
+  git
+  cmake
+  ninja
+  rocm-gfx1151-bin
+  abseil-cpp
+)
+# Do not provide/conflict with "migraphx": rocm-gfx1151-bin currently declares
+# conflicts=(migraphx) while also missing the files. This package is an add-on
+# meant to coexist with rocm-gfx1151-bin until that package is split/fixed.
+_git='https://github.com/ROCm/AMDMIGraphX'
+_rocmlir='https://github.com/ROCm/rocMLIR'
+_msgpack='https://github.com/msgpack/msgpack-c'
+_migraphx_commit=4874f127d7b897f4aa74a5afe8134ec145be8b75  # buildtherock branch, 2026-05
+_rocmlir_commit=d397d5ac237d06814fffdfd0fa1de30dbfe61cff  # from AMDMIGraphX buildtherock requirements.txt
+source=(
+  "migraphx::git+$_git.git#commit=$_migraphx_commit"
+  "migraphx-rocmlir::git+$_rocmlir.git#commit=$_rocmlir_commit"
+  "migraphx-msgpack-c::git+$_msgpack.git#tag=cpp-3.3.0"
+)
+sha256sums=('SKIP'
+            'SKIP'
+            'SKIP')
+options=(!lto)
+
+_prepare_rocm_env() {
+  export ROCM_PATH=/opt/rocm
+  export HIP_PATH=/opt/rocm
+  export HIP_PLATFORM=amd
+  export HIP_DEVICE_LIB_PATH=/opt/rocm/lib/llvm/amdgcn/bitcode
+  export PATH="/opt/rocm/bin:/opt/rocm/lib/llvm/bin:${PATH}"
+  CXXFLAGS+=" -fcf-protection=none"
+}
+
+build() {
+  _prepare_rocm_env
+  local gpu_targets="${AMDGPU_TARGETS:-${GPU_TARGETS:-gfx1151}}"
+
+  local msgpack_args=(
+    -Wno-dev
+    -G Ninja
+    -B build-msgpack
+    -S migraphx-msgpack-c
+    -D CMAKE_INSTALL_PREFIX=/usr
+    -D CMAKE_BUILD_TYPE=Release
+    -D CMAKE_POSITION_INDEPENDENT_CODE=ON
+    -D MSGPACK_BUILD_EXAMPLES=OFF
+    -D MSGPACK_BUILD_TESTS=OFF
+    -D CMAKE_POLICY_VERSION_MINIMUM=3.5
+  )
+  cmake "${msgpack_args[@]}"
+  cmake --build build-msgpack
+  DESTDIR="$srcdir/deps" cmake --install build-msgpack
+
+  local mlir_args=(
+    -Wno-dev
+    -G Ninja
+    -B build-mlir
+    -S migraphx-rocmlir
+    -D CMAKE_INSTALL_PREFIX=/usr
+    -D CMAKE_BUILD_TYPE=Release
+    -D CMAKE_C_COMPILER=/opt/rocm/bin/amdclang
+    -D CMAKE_CXX_COMPILER=/opt/rocm/bin/amdclang++
+    -D BUILD_FAT_LIBROCKCOMPILER=ON
+    -D BUILD_SHARED_LIBS=OFF
+    -D LLVM_INCLUDE_TESTS=OFF
+    -D CMAKE_POLICY_VERSION_MINIMUM=3.5
+  )
+  cmake "${mlir_args[@]}"
+  cmake --build build-mlir
+  DESTDIR="$srcdir/deps" cmake --install build-mlir
+
+  local cmake_args=(
+    -Wno-dev
+    -G Ninja
+    -B build
+    -S migraphx
+    -D CMAKE_INSTALL_PREFIX=/opt/rocm
+    -D CMAKE_C_COMPILER=/opt/rocm/bin/amdclang
+    -D CMAKE_CXX_COMPILER=/opt/rocm/bin/amdclang++
+    -D CMAKE_BUILD_TYPE=Release
+    -D CMAKE_PREFIX_PATH="$srcdir/deps/usr/lib/cmake;/opt/rocm;/opt/rocm/lib/cmake;/opt/rocm/lib/llvm/lib/cmake"
+    -D GPU_TARGETS="$gpu_targets"
+    -D MIGRAPHX_ENABLE_PYTHON=OFF
+    -D MIGRAPHX_USE_COMPOSABLEKERNEL=OFF
+    -D MIGRAPHX_USE_HIPBLASLT=ON
+    -D MIGRAPHX_PACKAGE_BACKEND=pre-installed
+    -D MIOPEN_BACKEND=HIP
+    -D BUILD_TESTING=OFF
+  )
+  cmake "${cmake_args[@]}"
+  cmake --build build
+}
+
+package() {
+  DESTDIR="$pkgdir" cmake --install build
+  install -Dm644 migraphx/LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+  install -Dm644 migraphx-rocmlir/LICENSE.TXT "$pkgdir/usr/share/licenses/$pkgname/LICENSE.rocMLIR"
+  install -Dm644 migraphx-rocmlir/external/llvm-project/LICENSE.TXT "$pkgdir/usr/share/licenses/$pkgname/LICENSE.llvm-project"
+}

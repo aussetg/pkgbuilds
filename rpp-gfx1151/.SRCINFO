@@ -1,0 +1,17 @@
+pkgbase = rpp-gfx1151
+	pkgdesc = AMD ROCm Performance Primitives for rocm-gfx1151-bin
+	pkgver = 7.2.3
+	pkgrel = 1
+	url = https://rocm.docs.amd.com/projects/rpp/en/latest/
+	arch = x86_64
+	license = MIT
+	makedepends = cmake
+	makedepends = rocm-gfx1151-bin
+	depends = rocm-gfx1151-bin
+	depends = openmp
+	depends = glibc
+	depends = gcc-libs
+	source = rpp-7.2.3.tar.gz::https://github.com/ROCm/rpp/archive/rocm-7.2.3.tar.gz
+	sha256sums = 348c08e5079e5f68403570e593d4c2f72e4bdaafdd38a0e57725353a16b6a66e
+
+pkgname = rpp-gfx1151

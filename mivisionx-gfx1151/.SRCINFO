@@ -1,0 +1,22 @@
+pkgbase = mivisionx-gfx1151
+	pkgdesc = Computer vision and machine intelligence libraries for rocm-gfx1151-bin
+	pkgver = 7.13.0rc2
+	pkgrel = 1
+	url = https://rocm.docs.amd.com/projects/MIVisionX/en/latest/
+	arch = x86_64
+	license = MIT
+	makedepends = git
+	makedepends = cmake
+	makedepends = rocm-gfx1151-bin
+	depends = rocm-gfx1151-bin
+	depends = rpp-gfx1151
+	depends = ffmpeg
+	depends = protobuf
+	depends = openmp
+	depends = glibc
+	depends = gcc-libs
+	options = !lto
+	source = mivisionx::git+https://github.com/ROCm/MIVisionX.git#commit=112b6ba9e8ab872a3e1b95afb037be0cea84fddd
+	sha256sums = SKIP
+
+pkgname = mivisionx-gfx1151

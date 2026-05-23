@@ -1,0 +1,74 @@
+# Maintainer: Local gfx1151 ROCm add-on package
+# Based on Arch Linux mivisionx packaging, adapted for rocm-gfx1151-bin / TheRock ROCm 7.13 preview.
+
+pkgname=mivisionx-gfx1151
+pkgver=7.13.0rc2
+pkgrel=1
+pkgdesc="Computer vision and machine intelligence libraries for rocm-gfx1151-bin"
+arch=('x86_64')
+url="https://rocm.docs.amd.com/projects/MIVisionX/en/latest/"
+license=('MIT')
+depends=(
+  rocm-gfx1151-bin
+  rpp-gfx1151
+  ffmpeg
+  protobuf
+  openmp
+  glibc
+  gcc-libs
+)
+makedepends=(
+  git
+  cmake
+  rocm-gfx1151-bin
+)
+# Do not provide/conflict with "mivisionx": rocm-gfx1151-bin currently declares
+# conflicts=(mivisionx) while also missing the files.
+_git='https://github.com/ROCm/MIVisionX'
+_mivisionx_commit=112b6ba9e8ab872a3e1b95afb037be0cea84fddd  # release/therock-7.13
+source=("mivisionx::git+$_git.git#commit=$_mivisionx_commit")
+sha256sums=('SKIP')
+options=(!lto)
+
+_prepare_rocm_env() {
+  export ROCM_PATH=/opt/rocm
+  export HIP_PATH=/opt/rocm
+  export HIP_PLATFORM=amd
+  export HIP_DEVICE_LIB_PATH=/opt/rocm/lib/llvm/amdgcn/bitcode
+  export PATH="/opt/rocm/bin:/opt/rocm/lib/llvm/bin:${PATH}"
+  CXXFLAGS+=" -fcf-protection=none"
+}
+
+build() {
+  _prepare_rocm_env
+  local gpu_targets="${AMDGPU_TARGETS:-${GPU_TARGETS:-gfx1151}}"
+  local prefix_path="/opt/rocm;/opt/rocm/lib/cmake"
+  # Convenience for building this package from the sibling local PKGBUILD
+  # checkout before rpp-gfx1151 has been installed system-wide.
+  local local_rpp="$srcdir/../../rpp-gfx1151/pkg/rpp-gfx1151/opt/rocm"
+  if [[ -d "$local_rpp/lib/cmake/rpp" ]]; then
+    prefix_path="$local_rpp;$local_rpp/lib/cmake;$prefix_path"
+  fi
+  local cmake_args=(
+    -Wno-dev
+    -B build
+    -S mivisionx
+    -D CMAKE_INSTALL_PREFIX=/opt/rocm
+    -D CMAKE_C_COMPILER=/opt/rocm/bin/amdclang
+    -D CMAKE_CXX_COMPILER=/opt/rocm/bin/amdclang++
+    -D CMAKE_BUILD_TYPE=Release
+    -D ROCM_PATH=/opt/rocm
+    -D CMAKE_PREFIX_PATH="$prefix_path"
+    -D BACKEND=HIP
+    -D GPU_TARGETS="$gpu_targets"
+    -D MIGRAPHX=OFF
+    -D MIN_DEPS_MODE=ON
+  )
+  cmake "${cmake_args[@]}"
+  cmake --build build
+}
+
+package() {
+  DESTDIR="$pkgdir" cmake --install build
+  install -Dm644 mivisionx/LICENSE.txt "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}
