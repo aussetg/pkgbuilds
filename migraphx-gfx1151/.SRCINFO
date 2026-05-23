@@ -1,7 +1,7 @@
 pkgbase = migraphx-gfx1151
 	pkgdesc = AMD's graph optimization engine for rocm-gfx1151-bin
 	pkgver = 7.13.0rc2
-	pkgrel = 1
+	pkgrel = 3
 	url = https://rocm.docs.amd.com/projects/AMDMIGraphX/en/latest/
 	arch = x86_64
 	license = MIT AND (Apache-2.0 WITH LLVM-exception OR NCSA)
@@ -20,6 +20,10 @@ pkgbase = migraphx-gfx1151
 	source = migraphx::git+https://github.com/ROCm/AMDMIGraphX.git#commit=4874f127d7b897f4aa74a5afe8134ec145be8b75
 	source = migraphx-rocmlir::git+https://github.com/ROCm/rocMLIR.git#commit=d397d5ac237d06814fffdfd0fa1de30dbfe61cff
 	source = migraphx-msgpack-c::git+https://github.com/msgpack/msgpack-c.git#tag=cpp-3.3.0
+	source = migraphx-hiprtc-half-minmax.patch
+	source = migraphx-hiprtc-warning-flags.patch
+	sha256sums = SKIP
+	sha256sums = SKIP
 	sha256sums = SKIP
 	sha256sums = SKIP
 	sha256sums = SKIP

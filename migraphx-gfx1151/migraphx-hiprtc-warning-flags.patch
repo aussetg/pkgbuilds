@@ -1,0 +1,14 @@
+diff --git a/src/targets/gpu/compile_hip_code_object.cpp b/src/targets/gpu/compile_hip_code_object.cpp
+index fa1b34eb9..4ef100876 100644
+--- a/src/targets/gpu/compile_hip_code_object.cpp
++++ b/src/targets/gpu/compile_hip_code_object.cpp
+@@ -116,6 +116,9 @@ static std::vector<std::string> get_compiler_warnings()
+     if(hip_has_flags({"-Werror", "-Wnrvo"}))
+         warnings.push_back("-Wno-nrvo");
+ 
++    if(hip_has_flags({"-Werror", "-Wlifetime-safety-intra-tu-suggestions"}))
++        warnings.push_back("-Wno-lifetime-safety-intra-tu-suggestions");
++
+     return warnings;
+ }
+ 

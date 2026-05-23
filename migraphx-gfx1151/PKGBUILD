@@ -3,7 +3,7 @@
 
 pkgname=migraphx-gfx1151
 pkgver=7.13.0rc2
-pkgrel=1
+pkgrel=3
 pkgdesc="AMD's graph optimization engine for rocm-gfx1151-bin"
 arch=('x86_64')
 url="https://rocm.docs.amd.com/projects/AMDMIGraphX/en/latest/"
@@ -35,11 +35,20 @@ source=(
   "migraphx::git+$_git.git#commit=$_migraphx_commit"
   "migraphx-rocmlir::git+$_rocmlir.git#commit=$_rocmlir_commit"
   "migraphx-msgpack-c::git+$_msgpack.git#tag=cpp-3.3.0"
+  "migraphx-hiprtc-half-minmax.patch"
+  "migraphx-hiprtc-warning-flags.patch"
 )
 sha256sums=('SKIP'
             'SKIP'
+            'SKIP'
+            'SKIP'
             'SKIP')
 options=(!lto)
+
+prepare() {
+  patch -d migraphx -Np1 -i "$srcdir/migraphx-hiprtc-half-minmax.patch"
+  patch -d migraphx -Np1 -i "$srcdir/migraphx-hiprtc-warning-flags.patch"
+}
 
 _prepare_rocm_env() {
   export ROCM_PATH=/opt/rocm
