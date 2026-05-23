@@ -4,3 +4,12 @@
 new.json
 src
 pkg
+__pycache__/
+
+# makepkg VCS source caches
+hipfort-gfx1151/hipfort/
+hiptensor-gfx1151/rocm-libraries/
+migraphx-gfx1151/migraphx/
+migraphx-gfx1151/migraphx-rocmlir/
+migraphx-gfx1151/migraphx-msgpack-c/
+mivisionx-gfx1151/mivisionx/
