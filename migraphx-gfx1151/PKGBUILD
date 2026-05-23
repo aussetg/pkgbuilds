@@ -3,7 +3,7 @@
 
 pkgname=migraphx-gfx1151
 pkgver=7.13.0rc2
-pkgrel=3
+pkgrel=4
 pkgdesc="AMD's graph optimization engine for rocm-gfx1151-bin"
 arch=('x86_64')
 url="https://rocm.docs.amd.com/projects/AMDMIGraphX/en/latest/"
