@@ -6,6 +6,11 @@ src
 pkg
 __pycache__/
 
+# makepkg downloaded sources without archive extensions
+bunny-cli-bin/README-*.md
+bunny-cli-bin/package-*.json
+bunny-cli-bin/bunny-*-linux-*
+
 # makepkg VCS source caches
 hipfort-gfx1151/hipfort/
 hiptensor-gfx1151/rocm-libraries/

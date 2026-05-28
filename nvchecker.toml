@@ -8,6 +8,12 @@ github = "lightonai/next-plaid"
 use_latest_release = true
 prefix = "v"
 
+[bunny-cli-bin]
+source = "github"
+github = "BunnyWay/cli"
+use_latest_release = true
+prefix = "v"
+
 [colgrep-bin]
 source = "github"
 github = "lightonai/next-plaid"

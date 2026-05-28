@@ -7,6 +7,7 @@ A small collection of AUR PKGBUILDs maintained in one repository.
 | Package | Type | Notes |
 | --- | --- | --- |
 | `arcana-git` | source (VCS) | Builds the latest `master` commit from `git.sr.ht/~aussetg/arcana` locally |
+| `bunny-cli-bin` | binary | Installs the upstream prebuilt bunny.net CLI for Linux x86_64/aarch64 |
 | `colgrep` | source | Built locally with host-native optimizations (`-march=native`, `-mtune=native`, Rust `target-cpu=native`) |
 | `colgrep-bin` | binary | Installs the upstream prebuilt Linux x86_64 release |
 | `obsidian-headless-bin` | npm binary | Installs the npm-published CLI and locally builds the `better-sqlite3` native addon |
@@ -62,6 +63,7 @@ Tracked versions are stored in:
 
 Automatic update tracking is enabled for:
 
+- `bunny-cli-bin`
 - `colgrep`
 - `colgrep-bin`
 - `obsidian-headless-bin`

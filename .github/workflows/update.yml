@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  AUR_PUBLISH_PACKAGES: '["colgrep", "colgrep-bin", "obsidian-headless-bin"]'
+  AUR_PUBLISH_PACKAGES: '["bunny-cli-bin", "colgrep", "colgrep-bin", "obsidian-headless-bin"]'
 
 jobs:
   check-updates:
