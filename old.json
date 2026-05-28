@@ -15,9 +15,9 @@
       "version": "0.0.8"
     },
     "pi-coding-agent-bin": {
-      "version": "0.75.5",
-      "gitref": "refs/tags/v0.75.5",
-      "url": "https://github.com/earendil-works/pi/releases/tag/v0.75.5"
+      "version": "0.76.0",
+      "gitref": "refs/tags/v0.76.0",
+      "url": "https://github.com/earendil-works/pi/releases/tag/v0.76.0"
     }
   }
 }
