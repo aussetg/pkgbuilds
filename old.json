@@ -2,22 +2,22 @@
   "version": 2,
   "data": {
     "colgrep": {
-      "version": "1.4.0",
-      "gitref": "refs/tags/v1.4.0",
-      "url": "https://github.com/lightonai/next-plaid/releases/tag/v1.4.0"
+      "version": "1.5.0",
+      "gitref": "refs/tags/v1.5.0",
+      "url": "https://github.com/lightonai/next-plaid/releases/tag/v1.5.0"
     },
     "colgrep-bin": {
-      "version": "1.4.0",
-      "gitref": "refs/tags/v1.4.0",
-      "url": "https://github.com/lightonai/next-plaid/releases/tag/v1.4.0"
+      "version": "1.5.0",
+      "gitref": "refs/tags/v1.5.0",
+      "url": "https://github.com/lightonai/next-plaid/releases/tag/v1.5.0"
     },
     "obsidian-headless-bin": {
       "version": "0.0.8"
     },
     "pi-coding-agent-bin": {
-      "version": "0.76.0",
-      "gitref": "refs/tags/v0.76.0",
-      "url": "https://github.com/earendil-works/pi/releases/tag/v0.76.0"
+      "version": "0.77.0",
+      "gitref": "refs/tags/v0.77.0",
+      "url": "https://github.com/earendil-works/pi/releases/tag/v0.77.0"
     }
   }
 }
