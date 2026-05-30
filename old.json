@@ -2,9 +2,9 @@
   "version": 2,
   "data": {
     "bunny-cli-bin": {
-      "version": "0.5.2",
-      "gitref": "refs/tags/v0.5.2",
-      "url": "https://github.com/BunnyWay/cli/releases/tag/v0.5.2"
+      "version": "0.5.3",
+      "gitref": "refs/tags/v0.5.3",
+      "url": "https://github.com/BunnyWay/cli/releases/tag/v0.5.3"
     },
     "colgrep": {
       "version": "1.5.0",
@@ -20,9 +20,9 @@
       "version": "0.0.8"
     },
     "pi-coding-agent-bin": {
-      "version": "0.77.0",
-      "gitref": "refs/tags/v0.77.0",
-      "url": "https://github.com/earendil-works/pi/releases/tag/v0.77.0"
+      "version": "0.78.0",
+      "gitref": "refs/tags/v0.78.0",
+      "url": "https://github.com/earendil-works/pi/releases/tag/v0.78.0"
     }
   }
 }
