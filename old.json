@@ -2,27 +2,28 @@
   "version": 2,
   "data": {
     "bunny-cli-bin": {
-      "version": "0.5.3",
-      "gitref": "refs/tags/v0.5.3",
-      "url": "https://github.com/BunnyWay/cli/releases/tag/v0.5.3"
+      "version": "0.9.1",
+      "gitref": "refs/tags/v0.9.1",
+      "url": "https://github.com/BunnyWay/cli/releases/tag/v0.9.1"
     },
     "colgrep": {
-      "version": "1.5.0",
-      "gitref": "refs/tags/v1.5.0",
-      "url": "https://github.com/lightonai/next-plaid/releases/tag/v1.5.0"
+      "version": "1.6.2",
+      "gitref": "refs/tags/v1.6.2",
+      "url": "https://github.com/lightonai/next-plaid/releases/tag/v1.6.2"
     },
     "colgrep-bin": {
-      "version": "1.5.0",
-      "gitref": "refs/tags/v1.5.0",
-      "url": "https://github.com/lightonai/next-plaid/releases/tag/v1.5.0"
+      "version": "1.6.2",
+      "gitref": "refs/tags/v1.6.2",
+      "url": "https://github.com/lightonai/next-plaid/releases/tag/v1.6.2"
     },
     "obsidian-headless-bin": {
-      "version": "0.0.8"
+      "version": "0.0.13",
+      "url": "https://www.npmjs.com/package/obsidian-headless/v/0.0.13"
     },
     "pi-coding-agent-bin": {
-      "version": "0.78.0",
-      "gitref": "refs/tags/v0.78.0",
-      "url": "https://github.com/earendil-works/pi/releases/tag/v0.78.0"
+      "version": "0.80.6",
+      "gitref": "refs/tags/v0.80.6",
+      "url": "https://github.com/earendil-works/pi/releases/tag/v0.80.6"
     }
   }
 }
