@@ -9,7 +9,7 @@ pkgbase = obsidian-headless-bin
 	makedepends = node-gyp
 	makedepends = python
 	depends = gcc-libs
-	depends = nodejs>=22
+	depends = nodejs-lts-jod
 	provides = obsidian-headless
 	conflicts = obsidian-headless
 	noextract = obsidian-headless-0.0.13.tgz

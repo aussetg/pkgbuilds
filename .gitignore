@@ -12,6 +12,7 @@ bunny-cli-bin/package-*.json
 bunny-cli-bin/bunny-*-linux-*
 
 # makepkg VCS source caches
+arcana-git/arcana/
 hipfort-gfx1151/hipfort/
 hiptensor-gfx1151/rocm-libraries/
 migraphx-gfx1151/migraphx/

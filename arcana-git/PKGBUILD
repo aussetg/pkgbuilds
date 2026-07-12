@@ -1,0 +1,46 @@
+# Maintainer: Guillaume Ausset <guillaume+arch@ausset.me>
+
+pkgname=arcana-git
+pkgver=0.1.0.r49.g4d64c22
+pkgrel=1
+pkgdesc="Local-first retrieval CLI for books and papers"
+arch=('x86_64')
+url="https://git.sr.ht/~aussetg/arcana"
+license=('unknown')
+depends=('gcc-libs' 'glibc')
+makedepends=('cargo' 'git')
+options=('!lto')
+provides=('arcana')
+conflicts=('arcana')
+source=('arcana::git+https://git.sr.ht/~aussetg/arcana#branch=master')
+sha256sums=('SKIP')
+
+pkgver() {
+	cd "${srcdir}/arcana"
+	local version
+	version="$(grep -m1 '^version = ' Cargo.toml | cut -d '"' -f 2)"
+	printf '%s.r%s.g%s\n' "$version" "$(git rev-list --count HEAD)" "$(git rev-parse --short=7 HEAD)"
+}
+
+prepare() {
+	cd "${srcdir}/arcana"
+	export CARGO_HOME="${srcdir}/cargo-home"
+	cargo fetch --locked
+}
+
+build() {
+	cd "${srcdir}/arcana"
+	export CARGO_HOME="${srcdir}/cargo-home"
+	export CARGO_TARGET_DIR="${srcdir}/target"
+	export CFLAGS="${CFLAGS} -ffile-prefix-map=${srcdir}=."
+	export CXXFLAGS="${CXXFLAGS} -ffile-prefix-map=${srcdir}=."
+	export RUSTFLAGS="-C target-cpu=native --remap-path-prefix=${srcdir}=."
+	unset CARGO_ENCODED_RUSTFLAGS
+	cargo build --frozen --release --locked
+}
+
+package() {
+	cd "${srcdir}/arcana"
+	install -Dm755 "${srcdir}/target/release/arcana" "${pkgdir}/usr/bin/arcana"
+	install -Dm644 README.md "${pkgdir}/usr/share/doc/${pkgname}/README.md"
+}

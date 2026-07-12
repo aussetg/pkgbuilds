@@ -1,0 +1,18 @@
+pkgbase = arcana-git
+	pkgdesc = Local-first retrieval CLI for books and papers
+	pkgver = 0.1.0.r49.g4d64c22
+	pkgrel = 1
+	url = https://git.sr.ht/~aussetg/arcana
+	arch = x86_64
+	license = unknown
+	makedepends = cargo
+	makedepends = git
+	depends = gcc-libs
+	depends = glibc
+	provides = arcana
+	conflicts = arcana
+	options = !lto
+	source = arcana::git+https://git.sr.ht/~aussetg/arcana#branch=master
+	sha256sums = SKIP
+
+pkgname = arcana-git

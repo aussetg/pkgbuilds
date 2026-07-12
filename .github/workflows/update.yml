@@ -72,7 +72,7 @@ jobs:
         run: |
           set -euo pipefail
           pacman -Syu --noconfirm
-          pacman -S --noconfirm git openssh jq npm pacman-contrib python python-pip sudo patch
+          pacman -S --noconfirm git openssh jq nodejs-lts-jod npm pacman-contrib python python-pip sudo patch
           pip install nvchecker --break-system-packages
           useradd -m builder
           echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
@@ -128,7 +128,7 @@ jobs:
         run: |
           set -euo pipefail
           pacman -Syu --noconfirm
-          pacman -S --noconfirm git jq npm pacman-contrib python python-pip sudo patch
+          pacman -S --noconfirm git jq nodejs-lts-jod npm pacman-contrib python python-pip sudo patch
           pip install nvchecker --break-system-packages
           useradd -m builder
           echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers

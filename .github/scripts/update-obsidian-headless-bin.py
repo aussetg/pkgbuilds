@@ -12,6 +12,7 @@ EXPECTED_BIN = {"ob": "cli.js"}
 EXPECTED_CPU = {"x64", "arm64"}
 EXPECTED_BETTER_SQLITE3_DEPS = {"bindings", "prebuild-install"}
 EXPECTED_BINDINGS_DEPS = {"file-uri-to-path"}
+NODE_LTS_BY_MAJOR = {"22": "nodejs-lts-jod"}
 
 
 class UpdateError(RuntimeError):
@@ -74,7 +75,7 @@ def assert_keys(mapping: dict, expected: set[str], label: str):
         )
 
 
-def parse_node_engine(spec: str) -> str:
+def parse_node_engine(spec) -> str:
     if not isinstance(spec, str):
         raise UpdateError("obsidian-headless engines.node is missing; manual review required")
     match = re.fullmatch(r"\s*>=\s*([0-9]+)(?:\.\d+\.\d+)?\s*", spec)
@@ -83,6 +84,26 @@ def parse_node_engine(spec: str) -> str:
             f"unsupported engines.node value {spec!r}; manual review required"
         )
     return match.group(1)
+
+
+def parse_supported_node_majors(spec) -> set[str]:
+    if not isinstance(spec, str):
+        raise UpdateError("better-sqlite3 engines.node is missing; manual review required")
+    majors = set(re.findall(r"(?:^|\|\|)\s*([0-9]+)\.x\s*(?=\|\||$)", spec))
+    if not majors:
+        raise UpdateError(
+            f"unsupported better-sqlite3 engines.node value {spec!r}; manual review required"
+        )
+    return majors
+
+
+def resolve_node_lts_dependency(node_major: str) -> str:
+    try:
+        return NODE_LTS_BY_MAJOR[node_major]
+    except KeyError as exc:
+        raise UpdateError(
+            f"no Arch LTS Node package is configured for node {node_major}; manual review required"
+        ) from exc
 
 
 def replace_once(text: str, pattern: str, replacement: str, label: str) -> str:
@@ -147,6 +168,7 @@ def main() -> int:
     )
 
     node_major = parse_node_engine(deps_map(obsidian.get("engines")).get("node"))
+    node_dependency = resolve_node_lts_dependency(node_major)
 
     commander_version = resolve_version("commander", obsidian_deps["commander"])
     commander = get_package_meta("commander", commander_version)
@@ -165,6 +187,13 @@ def main() -> int:
 
     better_sqlite3_version = resolve_version("better-sqlite3", obsidian_deps["better-sqlite3"])
     better_sqlite3 = get_package_meta("better-sqlite3", better_sqlite3_version)
+    better_sqlite3_node_majors = parse_supported_node_majors(
+        deps_map(better_sqlite3.get("engines")).get("node")
+    )
+    assert_true(
+        node_major in better_sqlite3_node_majors,
+        f"better-sqlite3 {better_sqlite3_version} does not support Node {node_major}; manual review required",
+    )
     better_sqlite3_deps = deps_map(better_sqlite3.get("dependencies"))
     assert_keys(
         better_sqlite3_deps,
@@ -220,8 +249,8 @@ def main() -> int:
     pkgbuild = replace_once(pkgbuild, r"^pkgrel=.*$", "pkgrel=1", "pkgrel")
     pkgbuild = replace_once(
         pkgbuild,
-        r"^depends=\('gcc-libs' 'nodejs>=\d+'\)$",
-        f"depends=('gcc-libs' 'nodejs>={node_major}')",
+        r"^depends=\('gcc-libs' 'nodejs(?:>=\d+|-lts-[^']+)'\)$",
+        f"depends=('gcc-libs' '{node_dependency}')",
         "depends",
     )
     pkgbuild = replace_once(
@@ -254,7 +283,7 @@ def main() -> int:
     print(
         "Validated obsidian-headless-bin update:",
         f"pkgver={new_version}",
-        f"nodejs>={node_major}",
+        f"node={node_dependency}",
         f"better-sqlite3={better_sqlite3_version}",
         f"commander={commander_version}",
         f"bindings={bindings_version}",
