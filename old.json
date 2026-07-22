@@ -7,23 +7,23 @@
       "url": "https://github.com/BunnyWay/cli/releases/tag/v0.10.1"
     },
     "colgrep": {
-      "version": "1.6.2",
-      "gitref": "refs/tags/v1.6.2",
-      "url": "https://github.com/lightonai/next-plaid/releases/tag/v1.6.2"
+      "version": "1.6.3",
+      "gitref": "refs/tags/v1.6.3",
+      "url": "https://github.com/lightonai/next-plaid/releases/tag/v1.6.3"
     },
     "colgrep-bin": {
-      "version": "1.6.2",
-      "gitref": "refs/tags/v1.6.2",
-      "url": "https://github.com/lightonai/next-plaid/releases/tag/v1.6.2"
+      "version": "1.6.3",
+      "gitref": "refs/tags/v1.6.3",
+      "url": "https://github.com/lightonai/next-plaid/releases/tag/v1.6.3"
     },
     "obsidian-headless-bin": {
       "version": "0.0.13",
       "url": "https://www.npmjs.com/package/obsidian-headless/v/0.0.13"
     },
     "pi-coding-agent-bin": {
-      "version": "0.80.10",
-      "gitref": "refs/tags/v0.80.10",
-      "url": "https://github.com/earendil-works/pi/releases/tag/v0.80.10"
+      "version": "0.81.1",
+      "gitref": "refs/tags/v0.81.1",
+      "url": "https://github.com/earendil-works/pi/releases/tag/v0.81.1"
     }
   }
 }
