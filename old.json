@@ -7,14 +7,14 @@
       "url": "https://github.com/BunnyWay/cli/releases/tag/v0.10.1"
     },
     "colgrep": {
-      "version": "1.6.3",
-      "gitref": "refs/tags/v1.6.3",
-      "url": "https://github.com/lightonai/next-plaid/releases/tag/v1.6.3"
+      "version": "1.6.4",
+      "gitref": "refs/tags/v1.6.4",
+      "url": "https://github.com/lightonai/next-plaid/releases/tag/v1.6.4"
     },
     "colgrep-bin": {
-      "version": "1.6.3",
-      "gitref": "refs/tags/v1.6.3",
-      "url": "https://github.com/lightonai/next-plaid/releases/tag/v1.6.3"
+      "version": "1.6.4",
+      "gitref": "refs/tags/v1.6.4",
+      "url": "https://github.com/lightonai/next-plaid/releases/tag/v1.6.4"
     },
     "obsidian-headless-bin": {
       "version": "0.0.13",
