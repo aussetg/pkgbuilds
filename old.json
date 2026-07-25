@@ -21,9 +21,9 @@
       "url": "https://www.npmjs.com/package/obsidian-headless/v/0.0.13"
     },
     "pi-coding-agent-bin": {
-      "version": "0.82.0",
-      "gitref": "refs/tags/v0.82.0",
-      "url": "https://github.com/earendil-works/pi/releases/tag/v0.82.0"
+      "version": "0.82.1",
+      "gitref": "refs/tags/v0.82.1",
+      "url": "https://github.com/earendil-works/pi/releases/tag/v0.82.1"
     }
   }
 }

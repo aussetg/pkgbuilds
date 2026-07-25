@@ -1,6 +1,6 @@
 pkgbase = pi-coding-agent-bin
 	pkgdesc = AI coding assistant with read, bash, edit, write tools
-	pkgver = 0.82.0
+	pkgver = 0.82.1
 	pkgrel = 1
 	url = https://pi.dev/
 	arch = x86_64
@@ -10,9 +10,9 @@ pkgbase = pi-coding-agent-bin
 	provides = pi-coding-agent
 	conflicts = pi
 	conflicts = pi-coding-agent
-	source = https://github.com/badlogic/pi-mono/releases/download/v0.82.0/pi-linux-x64.tar.gz
-	source = LICENSE::https://raw.githubusercontent.com/badlogic/pi-mono/v0.82.0/LICENSE
-	sha256sums = 791abd8043bf85deb4d090b905c9ebce4eb4f5776f919b4e3d371f69a6b977d0
+	source = https://github.com/badlogic/pi-mono/releases/download/v0.82.1/pi-linux-x64.tar.gz
+	source = LICENSE::https://raw.githubusercontent.com/badlogic/pi-mono/v0.82.1/LICENSE
+	sha256sums = 884a9dec7e0b75a54c4d1933c93a7d45af1fbb81c32964c1dd45d67fac1f6544
 	sha256sums = 0457f5bcec3b3b211605dfb5d1a49042fd638f3686a410fe099c24a25af13c48
 
 pkgname = pi-coding-agent-bin
