@@ -1,0 +1,16 @@
+pkgbase = meshtool
+	pkgdesc = Mesh manipulation tool for cardiac simulation meshes
+	pkgver = 20260918
+	pkgrel = 1
+	url = https://bitbucket.org/numericor/meshtool
+	arch = x86_64
+	license = GPL-3.0-only
+	makedepends = gcc
+	makedepends = make
+	depends = zlib
+	depends = gcc-libs
+	depends = glibc
+	source = meshtool-20260918.tar.gz::https://bitbucket.org/numericor/meshtool/get/7c842f4fa0bfaee59d9e757829638d7358207371.tar.gz
+	sha256sums = b6cd2969ddde0a6f64d9e6a7a912e8946278280219d891f84fa1a0d606054679
+
+pkgname = meshtool

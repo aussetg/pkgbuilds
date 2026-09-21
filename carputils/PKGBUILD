@@ -1,0 +1,79 @@
+# Maintainer: Guillaume Ausset <guillaume+arch@ausset.me>
+
+# carputils has no tags of its own: each openCARP release pins a submodule
+# commit. This package tracks the commit pinned by the openCARP v20.0 release
+# (external/carputils in the openCARP repository), which is why pkgver follows
+# the openCARP release numbering.
+
+# The wheel is built with PEP 517 on purpose: carputils' setup.py hooks the
+# legacy `setup.py install` command to generate a personal settings.yaml in
+# the invoking user's home. That must not run during packaging; the wheel
+# path never triggers it, and this package ships its own system default at
+# site-packages/settings.yaml instead (the last candidate carputils searches,
+# after $CARPUTILS_SETTINGS, ./settings.yaml and ~/.config/carputils/).
+# Users can still generate a personal file with:
+#   cusettings ~/.config/carputils/settings.yaml
+
+pkgname=carputils
+pkgver=20.0
+pkgrel=1
+pkgdesc="Python framework for generating and running openCARP simulations"
+arch=('x86_64')
+url="https://git.opencarp.org/openCARP/carputils"
+license=('Apache-2.0')
+depends=('opencarp' 'python-numpy' 'python-scipy' 'python-yaml' 'python-pandas'
+         'python-matplotlib' 'python-dateutil' 'python-six' 'python-pytables')
+optdepends=('meshtool: mesh processing pipeline'
+            'meshalyzer: visualization of simulation output'
+            'python-pydoe: latin hypercube parameter polling (not packaged on AUR)')
+makedepends=('gcc' 'python-build' 'python-installer' 'python-setuptools' 'python-wheel')
+source=("${pkgname}-${pkgver}.tar.gz::https://git.opencarp.org/openCARP/carputils/-/archive/49bc2a4eabc5efc019aab174142ddf89fda18812/carputils-49bc2a4eabc5efc019aab174142ddf89fda18812.tar.gz")
+sha256sums=('7d3bf647e8ce2d771497c073c7bcb81c371d39da6396e70ccb9e4bfa647c7046')
+
+build() {
+	cd "carputils-49bc2a4eabc5efc019aab174142ddf89fda18812"
+	python -m build --wheel --no-isolation
+}
+
+check() {
+	cd "carputils-49bc2a4eabc5efc019aab174142ddf89fda18812"
+	local site
+	site="$(python -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])')"
+	rm -rf "${srcdir}/carputils-check"
+	python -m installer --destdir "${srcdir}/carputils-check" dist/*.whl
+	# Import from ${srcdir}, not the source tree: the extracted carputils/
+	# package (without the compiled cext modules) would shadow the install.
+	cd "${srcdir}"
+	PYTHONPATH="${srcdir}/carputils-check${site}" \
+		python -c 'import carputils; import carputils.cext.mshread; print("carputils import OK")'
+}
+
+package() {
+	cd "carputils-49bc2a4eabc5efc019aab174142ddf89fda18812"
+	local site
+	site="$(python -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])')"
+	python -m installer --destdir "${pkgdir}" dist/*.whl
+
+	# System default settings pointing at this repository's package layout
+	# (openCARP/mesher/igb* in /usr/bin, sources in /usr/share/openCARP).
+	# Empty mesh/limpetgui dirs: example meshes are an svn checkout upstream
+	# manages itself, and limpetgui is not packaged.
+	PYTHONPATH="${pkgdir}${site}" \
+		python bin/cusettings \
+			--software-root /usr/bin \
+			--meshtool-dir /usr/bin \
+			--meshalyzer-dir /usr/bin \
+			--limpetgui-dir '' \
+			--mesh-dir '' \
+			--opencarp-src /usr/share/openCARP \
+			--mpiexec mpiexec \
+			--flavor petsc \
+			"${pkgdir}${site}/settings.yaml"
+
+	# The settings template defaults to the MUMPS direct solver, which our
+	# petsc package does not provide; SUPERLU_DIST is enabled instead.
+	sed -i 's/^DIRECT_SOLVER: *MUMPS/DIRECT_SOLVER: SUPERLU_DIST/' \
+		"${pkgdir}${site}/settings.yaml"
+
+	install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}

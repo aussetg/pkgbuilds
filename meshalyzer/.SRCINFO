@@ -1,0 +1,22 @@
+pkgbase = meshalyzer
+	pkgdesc = OpenGL scientific visualizer for openCARP finite element data
+	pkgver = 20260813
+	pkgrel = 1
+	url = https://git.opencarp.org/openCARP/meshalyzer
+	arch = x86_64
+	license = GPL-3.0-only
+	makedepends = cmake
+	makedepends = gcc
+	depends = fltk
+	depends = freeglut
+	depends = glew
+	depends = glu
+	depends = libpng
+	depends = libjpeg-turbo
+	depends = mesa
+	depends = gcc-libs
+	depends = glibc
+	source = meshalyzer-20260813.tar.gz::https://git.opencarp.org/openCARP/meshalyzer/-/archive/28de2493568b219e2b200b67a3688b206008804f/meshalyzer-28de2493568b219e2b200b67a3688b206008804f.tar.gz
+	sha256sums = af5cc64bc4f2774d64afa913aebc67beb5dd907d6ff4a2ab5c75be3e1e1146e1
+
+pkgname = meshalyzer

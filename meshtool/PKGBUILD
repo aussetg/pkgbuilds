@@ -1,0 +1,50 @@
+# Maintainer: Guillaume Ausset <guillaume+arch@ausset.me>
+
+# meshtool has no tagged release since 2019 (v16); openCARP pins an untagged
+# commit for its bundled builds. This package tracks upstream master, pinned
+# to a checksummed commit snapshot.
+
+pkgname=meshtool
+pkgver=20260918
+pkgrel=1
+pkgdesc="Mesh manipulation tool for cardiac simulation meshes"
+arch=('x86_64')
+url="https://bitbucket.org/numericor/meshtool"
+license=('GPL-3.0-only')
+depends=('zlib' 'gcc-libs' 'glibc')
+makedepends=('gcc' 'make')
+source=("${pkgname}-${pkgver}.tar.gz::https://bitbucket.org/numericor/meshtool/get/7c842f4fa0bfaee59d9e757829638d7358207371.tar.gz")
+sha256sums=('b6cd2969ddde0a6f64d9e6a7a912e8946278280219d891f84fa1a0d606054679')
+
+prepare() {
+	cd numericor-meshtool-*
+	# The Makefile generates my_switches.def on first run with defaults that
+	# leave gzip support off and tune PAR_MAKE; write our own instead. In
+	# particular, do NOT enable TUNE_NATIVE (deployment package).
+	cat > my_switches.def <<'EOF'
+MT_OPENMP = 1
+MT_GZIP = 1
+MT_CC_ENV = gnu
+MT_SILENT = 1
+EOF
+}
+
+build() {
+	cd numericor-meshtool-*
+	# Do not run `make all` with parallel MAKEFLAGS: its parbuild and stdl
+	# targets have no inter-target dependency, so standalones race the
+	# library archives they link against.
+	make parbuild
+	make stdl
+}
+
+package() {
+	cd numericor-meshtool-*
+	install -Dm755 meshtool "${pkgdir}/usr/bin/meshtool"
+	for bin in standalones/*; do
+		[[ -f "$bin" && -x "$bin" ]] && \
+			install -Dm755 "$bin" "${pkgdir}/usr/bin/$(basename "$bin")"
+	done
+	install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+	install -Dm644 GPLv3 "${pkgdir}/usr/share/licenses/${pkgname}/GPLv3"
+}

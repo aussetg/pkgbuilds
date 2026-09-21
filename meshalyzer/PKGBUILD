@@ -1,0 +1,48 @@
+# Maintainer: Guillaume Ausset <guillaume+arch@ausset.me>
+
+# meshalyzer's last git tag (v2.0) is from 2020 while releases continue
+# untagged; this package tracks upstream master, pinned to a checksummed
+# commit snapshot. meglyzer (headless EGL renderer) is built as well.
+
+pkgname=meshalyzer
+pkgver=20260813
+pkgrel=1
+pkgdesc="OpenGL scientific visualizer for openCARP finite element data"
+arch=('x86_64')
+url="https://git.opencarp.org/openCARP/meshalyzer"
+license=('GPL-3.0-only')
+depends=('fltk' 'freeglut' 'glew' 'glu' 'libpng' 'libjpeg-turbo' 'mesa'
+         'gcc-libs' 'glibc')
+makedepends=('cmake' 'gcc')
+source=("${pkgname}-${pkgver}.tar.gz::https://git.opencarp.org/openCARP/meshalyzer/-/archive/28de2493568b219e2b200b67a3688b206008804f/meshalyzer-28de2493568b219e2b200b67a3688b206008804f.tar.gz")
+sha256sums=('af5cc64bc4f2774d64afa913aebc67beb5dd907d6ff4a2ab5c75be3e1e1146e1')
+
+prepare() {
+	cd "meshalyzer-28de2493568b219e2b200b67a3688b206008804f"
+	# Release tarballs carry no git metadata: `git describe` fails and bakes an
+	# empty version string into gitversion.h. Pin the packaged commit instead.
+	sed -i 's|COMMAND git describe --tags|COMMAND echo 28de249|' src/CMakeLists.txt
+}
+
+build() {
+	# Arch's FLTK 1.4 headers include <cairo.h>, whose headers live in
+	# /usr/include/cairo; fltk-config --cflags adds that path but meshalyzer
+	# uses find_package(FLTK) only. Add the cairo cflags explicitly.
+	export CFLAGS="${CFLAGS} $(pkg-config --cflags cairo)"
+	export CXXFLAGS="${CXXFLAGS} $(pkg-config --cflags cairo)"
+	# USE_VTK=OFF: VTK import support is optional and would make this package
+	# depend on vtk (plus its cmake CLI11 requirement); the openCARP ecosystem
+	# uses the carp/igb formats natively.
+	cmake -B build "meshalyzer-28de2493568b219e2b200b67a3688b206008804f" \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DUSE_VTK=OFF \
+		-DBUILD_MEGLYZER=ON
+	cmake --build build
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+	install -Dm644 "meshalyzer-28de2493568b219e2b200b67a3688b206008804f/LICENSE" \
+		"${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}
