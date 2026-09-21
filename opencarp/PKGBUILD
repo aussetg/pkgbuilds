@@ -1,0 +1,79 @@
+# Maintainer: Guillaume Ausset <guillaume+arch@ausset.me>
+
+# openCARP is a mixed-license codebase: most files are Apache-2.0, igbutils
+# are GPL-3.0, and the core simulator paths (param/, simulator/, physics/,
+# tools/mesher/) are source-available under the Academic Public License 1.1:
+# NON-COMMERCIAL academic use only, commercial use requires a license from
+# info@opencarp.org. Built binaries inherit those restrictions.
+
+pkgname=opencarp
+pkgver=20.0
+pkgrel=1
+pkgdesc="Cardiac electrophysiology simulator (openCARP)"
+arch=('x86_64')
+url="https://opencarp.org"
+license=('Apache-2.0' 'GPL-3.0-only' 'custom:APL-1.1')
+depends=('openmpi' 'petsc' 'python' 'zlib' 'gcc-libs' 'glibc')
+makedepends=('cmake' 'gengetopt')
+optdepends=('sundials: advanced ODE time integration for ionic models')
+source=("${pkgname}-${pkgver}.tar.gz::https://git.opencarp.org/openCARP/openCARP/-/archive/v${pkgver}/openCARP-v${pkgver}.tar.gz"
+		'opencarp-build-info.patch')
+sha256sums=('f43564382dc6a4c0fab65a464c1f56d98bf3f9eed68b9de214fd6fe64493d468'
+		'74d671e1f62be93f0d1ce34997f20d2809a92a39a710cbdf57562a162f7726dc')
+
+# Index widths and real precision must match the PETSc build. 32-bit indices
+# and double precision are the PETSc defaults and what the AUR petsc package
+# uses. If PETSc is rebuilt with --with-64-bit-indices=1, pass
+# -DOPENCARP_LOCAL_INDEX_BITS=64 -DOPENCARP_GLOBAL_INDEX_BITS=64 here.
+
+prepare() {
+	cd "openCARP-v${pkgver}"
+	# Without this patch, build_info.py picks up the git metadata of any parent
+	# repository (e.g. this packaging repo) when building from a release
+	# tarball, and embeds its commit hash and remote URL into openCARP.
+	patch -p1 < "${srcdir}/opencarp-build-info.patch"
+}
+
+build() {
+	cd "openCARP-v${pkgver}"
+	export CFLAGS="${CFLAGS} -ffile-prefix-map=${srcdir}=."
+	export CXXFLAGS="${CXXFLAGS} -ffile-prefix-map=${srcdir}=."
+	cmake -B _build \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DDLOPEN=ON \
+		-DOPENCARP_LOCAL_INDEX_BITS=32 \
+		-DOPENCARP_GLOBAL_INDEX_BITS=32 \
+		-DOPENCARP_REAL_PRECISION=double
+	cmake --build _build
+}
+
+package() {
+	cd "openCARP-v${pkgver}"
+	DESTDIR="$pkgdir" cmake --install _build
+
+	# share/openCARP is installed by upstream on purpose: make_dynamic_model.sh
+	# and the limpet Python sources it drives need the simulator source tree to
+	# compile dynamic ionic-model plugins at runtime.
+
+	install -Dm644 LICENSE.md "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE.md"
+	install -Dm644 NOTICE "${pkgdir}/usr/share/licenses/${pkgname}/NOTICE"
+	install -Dm644 THIRD_PARTY_NOTICES.md "${pkgdir}/usr/share/licenses/${pkgname}/THIRD_PARTY_NOTICES.md"
+	install -Dm644 LICENSES/Apache-2.0.txt "${pkgdir}/usr/share/licenses/${pkgname}/Apache-2.0.txt"
+	install -Dm644 LICENSES/GPL-3.0.txt "${pkgdir}/usr/share/licenses/${pkgname}/GPL-3.0.txt"
+	install -Dm644 LICENSES/APL-1.1.md "${pkgdir}/usr/share/licenses/${pkgname}/APL-1.1.md"
+
+	# Byte-compiled caches are created while the build runs the limpet Python
+	# scripts; they record absolute build paths and must not ship.
+	find "${pkgdir}/usr/share/openCARP" -type d -name '__pycache__' -prune -exec rm -rf {} +
+
+	# gengetopt embeds the build-time path of its input file in generated
+	# sources, and upstream ships _build/CMakeCache.txt for make_dynamic_model.
+	# Point both at the installed source tree instead of the build machine.
+	# CMakeCache.txt still trips makepkg's $srcdir reference check because the
+	# recorded CFLAGS contain the -ffile-prefix-map argument; that text is
+	# informational and harmless.
+	sed -i "s|${srcdir}/openCARP-v${pkgver}|/usr/share/openCARP|g" \
+		"${pkgdir}/usr/share/openCARP/physics/limpet/src/cmdline.cc" \
+		"${pkgdir}/usr/share/openCARP/_build/CMakeCache.txt"
+}

@@ -1,8 +1,20 @@
 # pkgbuilds
 
-A small collection of AUR PKGBUILDs maintained in one repository.
+Locally maintained Arch Linux package recipes.
+
+This repository contains a reviewed local baseline for every package currently
+installed from the Arch User Repository (AUR), plus original packages maintained
+here. The AUR baseline came from the local `paru` and `rua` snapshots that
+produced the installed packages; it was not refreshed from the live AUR during
+the migration.
 
 ## Packages
+
+The complete migrated inventory is in [`aur-packages.txt`](aur-packages.txt).
+See [`AUR-BASELINE.md`](AUR-BASELINE.md) for scope, provenance, exclusions, and
+manual-source requirements.
+
+Original packages maintained in this repository include:
 
 | Package | Type | Notes |
 | --- | --- | --- |
@@ -12,12 +24,11 @@ A small collection of AUR PKGBUILDs maintained in one repository.
 | `colgrep-bin` | binary | Installs the upstream prebuilt Linux x86_64 release |
 | `obsidian-headless-bin` | npm binary | Installs the npm-published CLI and locally builds the `better-sqlite3` native addon |
 | `pi-coding-agent-bin` | binary | Installs the upstream prebuilt Linux x86_64 release from `badlogic/pi-mono` |
-| `migraphx-gfx1151` | source | Add-on package for `rocm-gfx1151-bin`; installs missing MIGraphX files without conflicting with the monolithic ROCm package |
-| `mivisionx-gfx1151` | source | Add-on package for `rocm-gfx1151-bin`; installs missing MIVisionX files without conflicting with the monolithic ROCm package |
-| `rpp-gfx1151` | source | Add-on package for `rocm-gfx1151-bin`; installs missing RPP files without conflicting with the monolithic ROCm package |
-| `rocalution-gfx1151` | source | Add-on package for `rocm-gfx1151-bin`; installs missing rocALUTION files without conflicting with the monolithic ROCm package |
-| `hiptensor-gfx1151` | source | Add-on package for `rocm-gfx1151-bin`; installs missing hipTensor files without conflicting with the monolithic ROCm package |
-| `hipfort-gfx1151` | source | Add-on package for `rocm-gfx1151-bin`; installs missing hipfort files without conflicting with the monolithic ROCm package |
+| `rocm-gfx1151-bin` | stable binary SDK | Installs AMD ROCm Core SDK 7.14 for gfx1151 with verified component metadata and repaired LLVM runtime files |
+| `zoom` | binary | Repackages the official Zoom Workplace Arch tarball from the Zoom Download Center with Arch dependency mapping |
+| `migraphx-gfx1151` | source | Installs the source-only MIGraphX 2.16.0 ROCm-Extras release for ROCm 7.14 with its exact pinned rocMLIR compiler |
+| `opencarp` | source | Builds the openCARP 20.0 cardiac electrophysiology simulator against AUR PETSc; core simulator is non-commercial (APL-1.1) |
+| `hipfort-gfx1151` | source | Installs hipFORT 0.8.0 from its ROCm 7.14.0 source release with AMD Flang |
 
 ## Layout
 
@@ -44,6 +55,15 @@ cd <pkgname>
 makepkg -fsc
 ```
 
+Build from these local directories rather than asking an AUR helper to fetch a
+recipe. Review each update against its upstream release before changing
+`pkgver`, sources, or checksums.
+
+Some proprietary packages require an installer downloaded through the vendor's
+account or license flow. Put that exact file beside the package's `PKGBUILD`;
+`makepkg` verifies its pinned checksum. See
+[`AUR-BASELINE.md`](AUR-BASELINE.md#manual-sources).
+
 ## Automation
 
 GitHub Actions checks `nvchecker.toml` for new upstream releases and, when updates are found:
@@ -61,13 +81,15 @@ Tracked versions are stored in:
 
 - `old.json`
 
-Automatic update tracking is enabled for:
+Automatic update tracking is currently enabled only for:
 
 - `bunny-cli-bin`
 - `colgrep`
 - `colgrep-bin`
 - `obsidian-headless-bin`
 - `pi-coding-agent-bin`
+
+The migrated inventory is intentionally not auto-updated from AUR.
 
 ## Required GitHub Actions secrets
 
@@ -84,4 +106,9 @@ The SSH key must have push access to the corresponding AUR repositories.
 - `colgrep-bin` is the generic alternative for users who want a prebuilt package.
 - `obsidian-headless-bin` auto-updates are gated on npm metadata validation and a successful `makepkg` build because upstream bundles a native Node addon (`better-sqlite3`).
 - `arcana-git` tracks the latest upstream commit and is intentionally excluded from the automated release update / AUR publish workflow.
-- The `*-gfx1151` ROCm packages are local add-ons for the current `rocm-gfx1151-bin` package. They deliberately do not `provide` or `conflict` with the official ROCm component names because `rocm-gfx1151-bin` currently declares conflicts/provides for those names while not shipping the files.
+- `rocm-gfx1151-bin` advertises only components verified in AMD's stable 7.14
+  payload. MIGraphX and hipFORT have matching, separate source packages.
+  AMD lists RPP and MIVisionX as planned for future 7.14 releases, so stale
+  7.2/7.13 recipes were removed and neither name is provided. hipTensor and
+  rocALUTION are already included in the Core SDK. See
+  `rocm-gfx1151-bin/ROCM-COMPONENTS.md`.

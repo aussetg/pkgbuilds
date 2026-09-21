@@ -1,0 +1,20 @@
+diff --git a/simulator/build_info.py b/simulator/build_info.py
+index b48ca439..91317b7d 100755
+--- a/simulator/build_info.py
++++ b/simulator/build_info.py
+@@ -147,8 +147,13 @@ TEMPLATE = """// SPDX-FileCopyrightText: Copyright (c) NumeriCor GmbH
+ 
+ def generate():
+ 
+-    # check whether we are in a git repo
+-    if subprocess.call(["git", "branch"], stderr=subprocess.STDOUT, stdout=open(os.devnull, 'w')) == 0:
++    # check whether the source tree itself is a git repo. Without this
++    # restriction, building from a release tarball inside an unrelated
++    # parent git repository (e.g. a packaging repository) would silently
++    # embed that repository's metadata into the binary.
++    source_dir = os.path.dirname(os.path.abspath(__file__))
++    if os.path.exists(os.path.join(source_dir, '.git')) and \
++       subprocess.call(["git", "branch"], stderr=subprocess.STDOUT, stdout=open(os.devnull, 'w')) == 0:
+         info = git(os.path.dirname(os.path.abspath(__file__)))
+     
+         # Get subrepo info

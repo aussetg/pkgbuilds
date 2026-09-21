@@ -1,0 +1,24 @@
+pkgbase = opencarp
+	pkgdesc = Cardiac electrophysiology simulator (openCARP)
+	pkgver = 20.0
+	pkgrel = 1
+	url = https://opencarp.org
+	arch = x86_64
+	license = Apache-2.0
+	license = GPL-3.0-only
+	license = custom:APL-1.1
+	makedepends = cmake
+	makedepends = gengetopt
+	depends = openmpi
+	depends = petsc
+	depends = python
+	depends = zlib
+	depends = gcc-libs
+	depends = glibc
+	optdepends = sundials: advanced ODE time integration for ionic models
+	source = opencarp-20.0.tar.gz::https://git.opencarp.org/openCARP/openCARP/-/archive/v20.0/openCARP-v20.0.tar.gz
+	source = opencarp-build-info.patch
+	sha256sums = f43564382dc6a4c0fab65a464c1f56d98bf3f9eed68b9de214fd6fe64493d468
+	sha256sums = 74d671e1f62be93f0d1ce34997f20d2809a92a39a710cbdf57562a162f7726dc
+
+pkgname = opencarp
