@@ -30,7 +30,7 @@ Original packages maintained in this repository include:
 | `opencarp` | source | Builds the openCARP 20.0 cardiac electrophysiology simulator against AUR PETSc; core simulator is non-commercial (APL-1.1) |
 | `petsc` | source | PETSc 3.25.3 with a fixed all-[extra] dependency set (scotch, pastix, superlu_dist, zfp, hypre) instead of the AUR's build-time auto-detection; AUR-comment-informed |
 | `carputils` | source | openCARP experiment framework pinned to the openCARP 20.0 submodule commit; ships a system default settings.yaml for this repo's layout |
-| `meshtool` | source | Mesh manipulation tool, commit-pinned snapshot (upstream has no tags since 2019) with gzip and OpenMP enabled |
+| `meshtool` | source | Mesh manipulation tool, commit-pinned snapshot (upstream has no tags since 2019) with gzip, OpenMP and `-march=native` host tuning enabled |
 | `meshalyzer` | source | openCARP OpenGL visualizer + headless `meglyzer` (EGL), commit-pinned snapshot; VTK support disabled |
 | `hipfort-gfx1151` | source | Installs hipFORT 0.8.0 from its ROCm 7.14.0 source release with AMD Flang |
 
@@ -107,6 +107,7 @@ The SSH key must have push access to the corresponding AUR repositories.
 
 - `colgrep` disables LTO because upstream currently fails to link correctly with distro LTO flags.
 - `colgrep` is intentionally host-optimized and therefore should be built locally by each user.
+- `meshtool` is likewise host-optimized (`-march=native`, upstream `TUNE_NATIVE`) and should be built locally by each user.
 - `colgrep-bin` is the generic alternative for users who want a prebuilt package.
 - `obsidian-headless-bin` auto-updates are gated on npm metadata validation and a successful `makepkg` build because upstream bundles a native Node addon (`better-sqlite3`).
 - `arcana-git` tracks the latest upstream commit and is intentionally excluded from the automated release update / AUR publish workflow.

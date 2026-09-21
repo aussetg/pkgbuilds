@@ -19,13 +19,15 @@ sha256sums=('b6cd2969ddde0a6f64d9e6a7a912e8946278280219d891f84fa1a0d606054679')
 prepare() {
 	cd numericor-meshtool-*
 	# The Makefile generates my_switches.def on first run with defaults that
-	# leave gzip support off and tune PAR_MAKE; write our own instead. In
-	# particular, do NOT enable TUNE_NATIVE (deployment package).
+	# leave gzip support off; write our own instead. TUNE_NATIVE follows this
+	# repository's colgrep philosophy: packages here are built locally on the
+	# user's machine, so meshtool is tuned for the build host (-march=native).
 	cat > my_switches.def <<'EOF'
 MT_OPENMP = 1
 MT_GZIP = 1
 MT_CC_ENV = gnu
 MT_SILENT = 1
+TUNE_NATIVE = 1
 EOF
 }
 
