@@ -28,6 +28,7 @@ Original packages maintained in this repository include:
 | `zoom` | binary | Repackages the official Zoom Workplace Arch tarball from the Zoom Download Center with Arch dependency mapping |
 | `migraphx-gfx1151` | source | Installs the source-only MIGraphX 2.16.0 ROCm-Extras release for ROCm 7.14 with its exact pinned rocMLIR compiler |
 | `opencarp` | source | Builds the openCARP 20.0 cardiac electrophysiology simulator against AUR PETSc; core simulator is non-commercial (APL-1.1) |
+| `petsc` | source | PETSc 3.25.3 with a fixed all-[extra] dependency set (scotch, pastix, superlu_dist, zfp, hypre) instead of the AUR's build-time auto-detection; AUR-comment-informed |
 | `hipfort-gfx1151` | source | Installs hipFORT 0.8.0 from its ROCm 7.14.0 source release with AMD Flang |
 
 ## Layout

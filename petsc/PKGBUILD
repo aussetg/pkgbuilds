@@ -1,0 +1,176 @@
+# Maintainer: Guillaume Ausset <guillaume+arch@ausset.me>
+# Based on the AUR petsc package by Martin Diehl <aur@martin-diehl.net>,
+# Andreas Bilke, Myles English, and Lucas H. Gabrielli.
+
+# Differences from the AUR recipe, informed by the AUR comments
+# (https://aur.archlinux.org/packages/petsc):
+#
+# - Fixed dependency set, no build-time auto-detection. The AUR recipe probes
+#   for optional packages with test_optdepends.sh, so its feature set depends
+#   on whatever happens to be installed at build time; this repeatedly broke
+#   builds and makes clean-chroot builds impossible (comments #945767,
+#   #957026, #957843, #1037752, #993361). Every enabled feature here is an
+#   explicit dependency; everything else is disabled. Since scotch, pastix,
+#   superlu_dist, zfp and hypre moved to [extra], the whole set is now
+#   repo-resolvable.
+# - kokkos/trilinos-ml/mumps/scalapack/triangle/zoltan/metis remain disabled
+#   (AUR-only, several with broken or deprecated interfaces: #998477, #1037752).
+# - --with-ptscotch-include=/usr/include/scotch matches scotch 7.0.14 in
+#   [extra] (#1060653).
+# - LDFLAGS += -lstdc++ is kept: without it libpetsc.so has undefined C++
+#   symbols and petsc4py imports fail (#1005041, #1053314).
+# - /etc/profile.d/petsc.sh is installed 0644, not executable (#1037754).
+# - check() runs a small smoke test (C API + petsc4py import) instead of
+#   `make check`, which fails in many environments: with an older petsc
+#   installed (#884260, #909576), from openmpi CUDA warnings (#955780), and
+#   when distro flags break the test builds (#964789).
+# - bison moved to makedepends (only used by configure for ptscotch parsing).
+# - depends lists only direct link-time/runtime dependencies, verified against
+#   the DT_NEEDED entries of libpetsc.so: gcc-libs (libstdc++, libquadmath)
+#   and libgfortran (Fortran runtime from mpi_f08 bindings) are declared
+#   explicitly, while zlib was dropped (not a direct dependency; it arrives
+#   via hdf5 and scotch).
+# - Installing a new major version over an old one is not supported upstream;
+#   remove the old petsc first before building if tests misbehave (#884260).
+
+pkgname=petsc
+pkgver=3.25.3
+pkgrel=1
+pkgdesc="Portable, extensible toolkit for scientific computation"
+arch=('x86_64')
+url="https://petsc.org"
+license=('BSD-2-Clause')
+options=('staticlibs')
+depends=('openmpi' 'lapack' 'fftw-openmpi' 'gsl' 'hdf5-openmpi' 'hwloc'
+         'libjpeg-turbo' 'libyaml' 'scotch' 'pastix' 'suitesparse' 'superlu'
+         'superlu_dist' 'zfp' 'hypre' 'gcc-libs' 'libgfortran'
+         'python-numpy' 'python-mpi4py')
+makedepends=('gcc' 'gcc-fortran' 'cmake' 'cython' 'python-setuptools' 'bison')
+provides=('petsc4py')
+install=petsc.install
+source=("http://web.cels.anl.gov/projects/petsc/download/release-snapshots/${pkgname}-${pkgver}.tar.gz"
+		'petsc-cython3.patch')
+sha256sums=('95ce60df2c7f9c5044d6a544c41e996a512557f91df1a60bdb690b332904ebb5'
+		'1c77fe8caa7324c2ccbce3bd0d728adca8a7f25de5d260508a3745482d1bc8c5')
+
+# 32-bit indices and double precision: PETSc defaults, and what the opencarp
+# package in this repository expects. Consumers must be built with matching
+# widths (openCARP: OPENCARP_*_INDEX_BITS=32, OPENCARP_REAL_PRECISION=double).
+PETSC_ARCH=linux-c-opt
+_install_dir=/opt/petsc/${PETSC_ARCH}
+
+prepare() {
+	cd ${pkgname}-${pkgver}
+	# petsc4py 3.25.3 predates Cython 3.3, which rejects indexing pointers
+	# with a plain int ("Invalid index type 'int'" in PC.pyx).
+	patch -p1 < "${srcdir}/petsc-cython3.patch"
+}
+
+build() {
+	cd ${pkgname}-${pkgver}
+	export PETSC_DIR=${PWD}
+	export PETSC_ARCH=${PETSC_ARCH}
+
+	local CONFOPTS="
+		--with-shared-libraries=1
+		--with-petsc4py=1
+		--with-mpi-ftn-module=mpi_f08
+		--with-cmake=0
+		--with-debugging=0
+		--with-mpi-dir=/usr
+		--with-64-bit-indices=0
+		--with-precision=double
+		--with-fftw=1
+		--with-gsl=1
+		--with-hdf5=1 --with-hdf5-fortran-bindings=1
+		--with-hwloc=1
+		--with-libjpeg=1
+		--with-pastix=1
+		--with-ptscotch=1 --with-bison=1
+			--with-ptscotch-lib=[libesmumps.so,libptscotch.so,libptscotcherr.so,libscotch.so,libscotcherr.so]
+			--with-ptscotch-include=/usr/include/scotch
+		--with-hypre=1
+			--with-hypre-lib=/usr/lib/libHYPRE.so
+			--with-hypre-include=/usr/include/hypre
+		--with-suitesparse=1
+		--with-superlu-lib=-lsuperlu --with-superlu-include=/usr/include/superlu
+		--with-superlu_dist-lib=-lsuperlu_dist --with-superlu_dist-include=/usr/include/superlu_dist
+		--with-yaml=1
+		--with-zfp=1
+	"
+
+	./configure --prefix=${_install_dir} ${CONFOPTS} \
+		"CFLAGS=$CFLAGS" \
+		"CXXFLAGS=$CXXFLAGS" \
+		"FFLAGS=$FFLAGS" \
+		"FOPTFLAGS=-O3" \
+		"LDFLAGS=$LDFLAGS -lstdc++" \
+		"MAKEFLAGS=$MAKEFLAGS"
+
+	make all
+}
+
+check() {
+	cd ${pkgname}-${pkgver}
+	export PETSC_DIR=${PWD}
+	export PETSC_ARCH=${PETSC_ARCH}
+
+	# Nothing is installed at check() time: the generated PETSc.pc points at
+	# the (still empty) install prefix, and petsc4py is only built into the
+	# fakeroot prefix during package(). So link the smoke test against the
+	# build tree directly, and install petsc4py into a scratch directory for
+	# the import check.
+	cat > "${srcdir}/petsc-smoke.c" <<'EOF'
+#include <petscsys.h>
+#include <petscvec.h>
+static char help[] = "smoke";
+int main(int argc, char **argv) {
+	Vec x; PetscReal norm;
+	PetscInitialize(&argc, &argv, 0, help);
+	VecCreate(PETSC_COMM_WORLD, &x);
+	VecSetSizes(x, PETSC_DECIDE, 8);
+	VecSetFromOptions(x);
+	VecSet(x, 2.0);
+	VecNorm(x, NORM_2, &norm);
+	PetscPrintf(PETSC_COMM_WORLD, "smoke L2 norm %.1f (expected 5.7)\n", norm);
+	VecDestroy(&x);
+	return PetscFinalize();
+}
+EOF
+
+	mpicc ${CFLAGS} "${srcdir}/petsc-smoke.c" \
+		-I"${PETSC_DIR}/include" -I"${PETSC_DIR}/${PETSC_ARCH}/include" \
+		-L"${PETSC_DIR}/${PETSC_ARCH}/lib" -lpetsc -lstdc++ \
+		-o "${srcdir}/petsc-smoke"
+	LD_LIBRARY_PATH="${PETSC_DIR}/${PETSC_ARCH}/lib" "${srcdir}/petsc-smoke"
+
+	rm -rf "${srcdir}/petsc4py-check"
+	cd src/binding/petsc4py
+	PETSC_DIR="${PETSC_DIR}" PETSC_ARCH="${PETSC_ARCH}" \
+		python -m pip install --no-index --no-build-isolation --no-deps \
+		--quiet --target "${srcdir}/petsc4py-check" ./
+	LD_LIBRARY_PATH="${PETSC_DIR}/${PETSC_ARCH}/lib" \
+		PYTHONPATH="${srcdir}/petsc4py-check" \
+		python -c 'import petsc4py; petsc4py.init(); from petsc4py import PETSc; print("petsc4py", petsc4py.__version__, "PETSc", PETSc.Sys.getVersion())'
+}
+
+package() {
+	cd ${pkgname}-${pkgver}
+	export PETSC_DIR=${PWD}
+	export PETSC_ARCH=${PETSC_ARCH}
+
+	make DESTDIR=${pkgdir} install
+
+	install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+
+	install -Dm644 /dev/stdin "${pkgdir}/etc/profile.d/petsc.sh" <<EOF
+export PETSC_DIR=${_install_dir}
+export PYTHONPATH=${_install_dir}/lib:\\\${PYTHONPATH}
+EOF
+
+	install -dm755 "${pkgdir}/etc/ld.so.conf.d/"
+	echo "${_install_dir}/lib" > "${pkgdir}/etc/ld.so.conf.d/petsc.conf"
+
+	install -Dm644 "${PETSC_ARCH}/lib/pkgconfig/PETSc.pc" \
+		"${pkgdir}/usr/share/pkgconfig/PETSc.pc"
+}

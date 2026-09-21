@@ -1,0 +1,10 @@
+--- a/src/binding/petsc4py/src/petsc4py/PETSc/PC.pyx
++++ b/src/binding/petsc4py/src/petsc4py/PETSc/PC.pyx
+@@ -1249,6 +1249,7 @@
+         if ND_Pi_Full is not None: ND_full_mat = ND_Pi_Full.mat
+         cdef PetscInt idim = asInt(dim)
+         cdef PetscMat *RT_Pi_mat = NULL
++        cdef Py_ssize_t i
+         if RT_Pi is not None:
+             PetscMalloc(<size_t>dim*sizeof(PetscMat), &RT_Pi_mat)
+             assert len(RT_Pi) == dim
