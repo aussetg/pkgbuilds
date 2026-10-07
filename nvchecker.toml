@@ -96,6 +96,15 @@ github = "ogulcancelik/herdr"
 use_latest_release = true
 prefix = "v"
 
+[imhex-bin]
+# Release asset imhex-<ver>-ArchLinux-x86_64.pkg.tar.zst is templated from
+# pkgver, but re-check the asset list on each bump: the name also embeds the
+# distro and could change (as it has for Fedora sub-versions in the past).
+source = "github"
+github = "WerWolv/ImHex"
+use_latest_release = true
+prefix = "v"
+
 [jefferson]
 source = "github"
 github = "onekey-sec/jefferson"
@@ -157,6 +166,14 @@ use_latest_release = true
 prefix = "v"
 
 # ---- GitHub: tag without "v" prefix, or tag filtering needed ----------------
+[detect-it-easy]
+# Tags are bare X.Y. The Arch asset name embeds upstream's own pkgrel
+# (detect-it-easy-<ver>-1-x86_64.pkg.tar.zst); re-check the asset list on
+# each bump. die/diec/diel link Qt5Script, AUR-only on stock Arch.
+source = "github"
+github = "horsicq/DIE-engine"
+use_latest_release = true
+
 [libudev0-shim]
 source = "github"
 github = "archlinux/libudev0-shim"

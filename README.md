@@ -43,6 +43,8 @@ Original packages maintained in this repository include:
 | `hipfort-gfx1151` | source | Installs hipFORT 0.8.0 from its ROCm 7.14.0 source release with AMD Flang |
 | `mlir` | source | MLIR 22.1.8 built against system LLVM 22 with Python (nanobind) bindings installed into the system interpreter's site-packages; carries the upstream nanobind 3 compile fix plus a multi-DSO runtime fix |
 | `rr` | source | Record-and-replay debugger 5.9.0; carries the termio build fix and the upstream Strix Halo (Zen 5) CPU-id backport, both already on master. check() record/replay smoke test skips when perf_event_open is denied by kernel policy or the host's CrowdStrike Falcon agent |
+| `imhex-bin` | binary | Repackages upstream's own Arch x86_64 build of the ImHex hex editor; it links the system fmt/mbedtls/glfw/yara/curl libraries, so it stays small and follows library updates |
+| `detect-it-easy` | binary | Repackages upstream's own Arch x86_64 build of Detect It Easy (DIE) under `/opt` with `/usr/bin` symlinks and desktop integration; links Qt5Script, which stock Arch only has in the AUR (`qt5-script`) |
 
 ## Layout
 

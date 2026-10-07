@@ -1,0 +1,45 @@
+# Maintainer: Guillaume Ausset <guillaume+arch@ausset.me>
+#
+# Repackages Detect It Easy from upstream's own Arch Linux build. Upstream
+# installs the application under /opt/detect-it-easy with /usr/bin symlinks,
+# a desktop entry, AppStream metainfo, hicolor icons and the MIT license.
+#
+# Note: the binaries link Qt5Script/Qt5ScriptTools, which the official Arch
+# repositories dropped in 2023. On stock Arch this comes from the AUR
+# (qt5-script); CachyOS ships a rebuild in its own repositories.
+
+pkgname=detect-it-easy
+pkgver=3.21
+pkgrel=1
+pkgdesc='Detect It Easy (DIE): cross-platform program for determining types of files'
+arch=('x86_64')
+url='https://github.com/horsicq/DIE-engine'
+license=('MIT')
+depends=(
+  'freetype2'
+  'gcc-libs'
+  'glib2'
+  'glibc'
+  'graphite'
+  'hicolor-icon-theme'
+  'icu'
+  'krb5'
+  'qt5-base'
+  'qt5-script'
+  'qt5-svg'
+  'systemd-libs'
+)
+options=('!strip' '!debug')
+
+# Upstream's own Arch package; makepkg unpacks it into $srcdir/{opt,usr}.
+source=("${url}/releases/download/${pkgver}/detect-it-easy-${pkgver}-1-${CARCH}.pkg.tar.zst")
+b2sums=('4177df385e35f8879861783033f8bf8ab7f9b3453cd3b5d74b442faf91b8929e14b9bebe5f856e6714b8972febf2cc57549ff2dd5355f7fb988349377a7d1478')
+
+package() {
+  # Complete upstream tree: /opt/detect-it-easy (die, diec, diel, signature
+  # databases, yara rules, translations) and /usr/{bin symlinks, share
+  # desktop + icons + metainfo + license}. The dotfile package metadata
+  # (.PKGINFO, …) is left behind by copying only these two trees.
+  cp -a --no-preserve=ownership "${srcdir}/opt" "${pkgdir}/opt"
+  cp -a --no-preserve=ownership "${srcdir}/usr" "${pkgdir}/usr"
+}

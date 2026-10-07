@@ -1,0 +1,48 @@
+# Maintainer: Guillaume Ausset <guillaume+arch@ausset.me>
+#
+# Repackages the upstream Arch Linux build of ImHex. Upstream links against
+# the distribution's shared libraries (fmt, mbedtls, glfw, yara, curl, …), so
+# the binary package stays small and follows library updates on this system.
+# imhex-updater is shipped to match the upstream package; on Arch, updates
+# arrive through pacman, not through it.
+
+pkgname=imhex-bin
+pkgver=1.38.1
+pkgrel=1
+pkgdesc='A Hex Editor for Reverse Engineers, Programmers and people who value their retinas when working at 3 AM.'
+arch=('x86_64')
+url='https://github.com/WerWolv/ImHex'
+license=('GPL-2.0-only')
+depends=(
+  'bzip2'
+  'curl'
+  'dbus'
+  'file'
+  'fontconfig'
+  'fmt'
+  'freetype2'
+  'glfw'
+  'gtk3'
+  'libglvnd'
+  'libssh2'
+  'mbedtls'
+  'xz'
+  'yara'
+  'zlib'
+  'zstd'
+)
+provides=('imhex')
+conflicts=('imhex')
+options=('!strip' '!debug')
+
+# Upstream's own Arch package; makepkg unpacks it straight into $srcdir/usr.
+source=("${url}/releases/download/v${pkgver}/imhex-${pkgver}-ArchLinux-${CARCH}.pkg.tar.zst")
+b2sums=('d7a4cd3f26428615d493b49a613d51126e38dad8964e83b329e981a4736f9535852cf108ab7a27575ea3a9af54383adf34c26e4db99bb4054d2f209a4395745f')
+
+package() {
+  # Complete upstream tree: /usr/bin/{imhex,imhex-updater},
+  # /usr/lib/libimhex.so + plugins, /usr/share/{imhex,applications,
+  # mime,pixmaps,licenses}. The dotfile package metadata (.PKGINFO, …) is
+  # left behind by copying only the usr/ tree.
+  cp -a --no-preserve=ownership "${srcdir}/usr" "${pkgdir}/usr"
+}

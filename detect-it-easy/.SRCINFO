@@ -1,0 +1,25 @@
+pkgbase = detect-it-easy
+	pkgdesc = Detect It Easy (DIE): cross-platform program for determining types of files
+	pkgver = 3.21
+	pkgrel = 1
+	url = https://github.com/horsicq/DIE-engine
+	arch = x86_64
+	license = MIT
+	depends = freetype2
+	depends = gcc-libs
+	depends = glib2
+	depends = glibc
+	depends = graphite
+	depends = hicolor-icon-theme
+	depends = icu
+	depends = krb5
+	depends = qt5-base
+	depends = qt5-script
+	depends = qt5-svg
+	depends = systemd-libs
+	options = !strip
+	options = !debug
+	source = https://github.com/horsicq/DIE-engine/releases/download/3.21/detect-it-easy-3.21-1-x86_64.pkg.tar.zst
+	b2sums = 4177df385e35f8879861783033f8bf8ab7f9b3453cd3b5d74b442faf91b8929e14b9bebe5f856e6714b8972febf2cc57549ff2dd5355f7fb988349377a7d1478
+
+pkgname = detect-it-easy
