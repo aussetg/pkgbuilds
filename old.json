@@ -1,29 +1,227 @@
 {
   "version": 2,
   "data": {
+    "archlinux-java-run": {
+      "version": "12"
+    },
+    "atuin-desktop-bin": {
+      "version": "0.2.20"
+    },
+    "binaryninja-personal": {
+      "version": "5.3.9757"
+    },
+    "brother-hll2375dw": {
+      "version": "4.0.0"
+    },
     "bunny-cli-bin": {
-      "version": "0.9.1",
-      "gitref": "refs/tags/v0.9.1",
-      "url": "https://github.com/BunnyWay/cli/releases/tag/v0.9.1"
+      "version": "0.18.0"
+    },
+    "clion": {
+      "version": "2026.2.3.1"
     },
     "colgrep": {
-      "version": "1.6.2",
-      "gitref": "refs/tags/v1.6.2",
-      "url": "https://github.com/lightonai/next-plaid/releases/tag/v1.6.2"
+      "version": "1.7.0"
     },
     "colgrep-bin": {
-      "version": "1.6.2",
-      "gitref": "refs/tags/v1.6.2",
-      "url": "https://github.com/lightonai/next-plaid/releases/tag/v1.6.2"
+      "version": "1.7.0"
+    },
+    "crossover": {
+      "version": "26.3.0"
+    },
+    "datagrip": {
+      "version": "2026.2.6"
+    },
+    "dataspell": {
+      "version": "2026.1.3"
+    },
+    "edk2-ovmf-fedora": {
+      "version": "20260213"
+    },
+    "expresslrs-configurator-bin": {
+      "version": "1.8.3"
+    },
+    "falcon-sensor": {
+      "version": "7.39.0"
+    },
+    "fframes": {
+      "version": "1.2.0"
+    },
+    "frida-core": {
+      "version": "17.15.4"
+    },
+    "frida-server-bin": {
+      "version": "17.22.2"
+    },
+    "frida-tools": {
+      "version": "14.11.0"
+    },
+    "google-cloud-cli": {
+      "version": "587.0.0"
+    },
+    "herdr-bin": {
+      "version": "0.9.3"
+    },
+    "hipfort-gfx1151": {
+      "version": "10.0.0"
+    },
+    "jefferson": {
+      "version": "0.4.8"
+    },
+    "jlink-software-and-documentation": {
+      "version": "9.82"
+    },
+    "lib32-libpng12": {
+      "version": "1.2.59"
+    },
+    "libdeep_filter_ladspa-bin": {
+      "version": "0.5.6"
+    },
+    "libudev0-shim": {
+      "version": "2"
+    },
+    "llama.cpp-gfx1151": {
+      "version": "b11439"
+    },
+    "luma-bin": {
+      "version": "1.2.3"
+    },
+    "mathematica": {
+      "version": "15.0.1"
+    },
+    "migraphx-gfx1151": {
+      "version": "2.16.0"
+    },
+    "mpremote": {
+      "version": "1.29.0"
+    },
+    "nomachine": {
+      "version": "9.8.2"
+    },
+    "nrf-connect-sdk-installer": {
+      "version": "0.2"
+    },
+    "nrf-udev": {
+      "version": "1.0.1"
+    },
+    "nrf5x-command-line-tools": {
+      "version": "10.24.2"
+    },
+    "nrfconnect-appimage": {
+      "version": "5.4.0"
+    },
+    "nrfutil": {
+      "version": "8.2.0"
     },
     "obsidian-headless-bin": {
-      "version": "0.0.13",
-      "url": "https://www.npmjs.com/package/obsidian-headless/v/0.0.13"
+      "version": "0.0.14"
+    },
+    "openocd-raspberrypi-git": {
+      "version": "v0.12.0.r27.gcf9c0b4"
+    },
+    "oss-cad-suite-build-bin": {
+      "version": "20261006"
+    },
+    "ov": {
+      "version": "0.55.0"
+    },
+    "pandoc-bin": {
+      "version": "3.12"
     },
     "pi-coding-agent-bin": {
-      "version": "0.80.6",
-      "gitref": "refs/tags/v0.80.6",
-      "url": "https://github.com/earendil-works/pi/releases/tag/v0.80.6"
+      "version": "1.0.4"
+    },
+    "pico-sdk": {
+      "version": "2.3.1"
+    },
+    "picotool": {
+      "version": "2.3.1"
+    },
+    "playwright-cli": {
+      "version": "0.1.22"
+    },
+    "pycharm": {
+      "version": "2026.2.3"
+    },
+    "python-devicetree": {
+      "version": "0.0.2"
+    },
+    "python-frida-bin": {
+      "version": "17.22.2"
+    },
+    "python-lzallright": {
+      "version": "0.2.6"
+    },
+    "python-nrf_regtool": {
+      "version": "9.2.1"
+    },
+    "python-pykwalify": {
+      "version": "1.8.0"
+    },
+    "python-svada": {
+      "version": "2.2.1"
+    },
+    "python-west": {
+      "version": "1.5.0"
+    },
+    "rocm-gfx1151-bin": {
+      "version": "7.14.0"
+    },
+    "rocm-nightly-gfx1151-bin": {
+      "version": "10.0.0a20260730"
+    },
+    "rr": {
+      "version": "5.9.0"
+    },
+    "rua": {
+      "version": "0.19.10"
+    },
+    "rustrover": {
+      "version": "2026.2.3"
+    },
+    "ryzenadj": {
+      "version": "0.19.0"
+    },
+    "scc-bin": {
+      "version": "4.1.0"
+    },
+    "sioyek-dev": {
+      "version": "2.0.0.r1113.g552008ac"
+    },
+    "stlink-server": {
+      "version": "2.1.1"
+    },
+    "stm32cubeide": {
+      "version": "2.2.0"
+    },
+    "stm32cubemonucpd": {
+      "version": "1.4.0"
+    },
+    "stm32cubemx": {
+      "version": "6.18.1"
+    },
+    "stm32cubemx2": {
+      "version": "1.0.1"
+    },
+    "stm32cubeprog": {
+      "version": "2.22.0"
+    },
+    "sublime-merge": {
+      "version": "2132"
+    },
+    "swift-bin": {
+      "version": "6.4.0"
+    },
+    "vuescan-bin": {
+      "version": "9.8.51"
+    },
+    "winbox": {
+      "version": "4.4"
+    },
+    "zephyr-sdk": {
+      "version": "1.0.1"
+    },
+    "zoom": {
+      "version": "7.2.0.5705"
     }
   }
 }
