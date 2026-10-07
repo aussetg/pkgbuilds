@@ -112,9 +112,11 @@ EOF
         return 1
     fi
 
-    printf 'set pagination off\nset confirm off\ncontinue\necho REPLAY_OK\nquit\n' > "$srcdir/smoke.gdb"
-    ./bin/rr replay -x "$srcdir/smoke.gdb" 2>&1 | tee "$srcdir/smoke-replay.log"
-    grep -Eq 'REPLAY_OK|successfully finished' "$srcdir/smoke-replay.log"
+    # At end-of-trace rr detaches gdb and exits before further -x commands
+    # run, so success is rr's own exit status plus the end-of-trace detach.
+    printf 'set pagination off\nset confirm off\ncontinue\nquit\n' > "$srcdir/smoke.gdb"
+    ./bin/rr replay -x "$srcdir/smoke.gdb" >"$srcdir/smoke-replay.log" 2>&1
+    grep -q 'Detaching from program' "$srcdir/smoke-replay.log"
 }
 
 package() {
