@@ -1,0 +1,130 @@
+# Maintainer: Guillaume Ausset <guillaume+arch@ausset.me>
+# Based on the AUR rr package by Cody Schafer, dequis, Joel Teichroeb and
+# SandaruKasa (https://aur.archlinux.org/packages/rr).
+#
+# Differences from the AUR recipe:
+#
+# - rr-termio-verify.patch: struct termio's kernel definition drifted from
+#   rr's ABI table, breaking this compile-time check on current headers.
+#   Upstream removed the check on master; same patch as the AUR package.
+#   Drop when 5.10 releases.
+#
+# - rr-strix-halo.patch: backport of upstream 8ad7179 ("add support for AMD
+#   Strix Halo (Ryzen AI Max+ 395)"). Without it rr aborts at startup on this
+#   host's CPU (AMD cpu type 0x70f00, ext family 0xb, unknown to 5.9.0's
+#   compute_cpu_microarch). Upstream has it on master; drop when 5.10
+#   releases.
+#
+# - check() runs a record/replay smoke test. The full upstream suite
+#   (BUILD_TESTS=ON) stays off: it needs pexpect and runs very long. The
+#   smoke test is skipped when kernel.perf_event_paranoid > 3 (rr cannot run
+#   at all there) and when perf_event_open is denied by something outside
+#   the kernel's own policy (this host runs CrowdStrike Falcon, whose BPF
+#   hooks deny perf_event_open for makepkg-spawned rr while allowing the
+#   same binary from an interactive shell). Everything else — including
+#   CPU-recognition aborts, which is how the missing Strix Halo entry below
+#   was caught — fails the build.
+# - b2sums instead of sha1sums.
+# - python moved to depends: cmake requires the interpreter at configure
+#   time (find_package(PythonInterp 3 REQUIRED)) and installs the
+#   rr-collect-symbols.py helper into /usr/bin.
+# - perf moved to optdepends: rr never executes the perf binary itself (it
+#   uses its own perf_event_open counters); perf is only useful to profile
+#   rr and its recordings.
+# - Binaries are stripped normally (the AUR disables stripping; Debian ships
+#   rr stripped and upstream supports it).
+# - 32-bit support stays disabled (no multilib toolchain on this host): rr
+#   can record 32-bit processes but not replay them (upstream disable32bit
+#   semantics).
+# - The AMD Zen workaround ships like in the AUR/Debian layout, but the
+#   systemd unit stays disabled: it is an opt-in boot-time MSR tweak for
+#   some Zen systems, see https://github.com/rr-debugger/rr/wiki/Zen
+
+pkgname=rr
+pkgver=5.9.0
+pkgrel=1
+pkgdesc='Record and Replay framework: lightweight recording and deterministic debugging'
+arch=('x86_64')
+url='https://rr-project.org/'
+license=('MIT' 'BSD-2-Clause')
+depends=('capnproto' 'gcc-libs' 'gdb' 'glibc' 'python' 'zlib' 'zstd')
+makedepends=('cmake' 'ninja' 'patch' 'pkgconf')
+optdepends=('bash: for signal-rr-recording.sh'
+            'perf: profiling rr and its recordings')
+source=("$pkgname-$pkgver.tar.gz::https://github.com/rr-debugger/rr/archive/$pkgver.tar.gz"
+        'rr-termio-verify.patch'
+        'rr-strix-halo.patch')
+b2sums=('b87d0a33201a513a692e8deb20ada38f235ce7a3e41dd806d0dba9a1a73f2c3dbf71d7f95b7cb0b284c7e38a4a19ea58f9ddef31d2e9b92efc686b24a8e551e7'
+        'a7dcaa47dde995cfd3f5fa662a308cbcadd309defe3641a91c3952cfff4a3996f8aa4cacd9facbe898d0a411972e96fda56e1157868e67cf42dd7f72d9e7760f'
+        'e1ad6a890673ba400caa8fec81e6b277a90216f208b5b24e550c545074276f8eb374c5d3009ca4b23800ed3f2706c331057bfbf76f585fb5a8f72318cdcb5c13')
+
+prepare() {
+    cd "$pkgname-$pkgver"
+    patch -Np1 -i "$srcdir/rr-termio-verify.patch"
+    patch -Np1 -i "$srcdir/rr-strix-halo.patch"
+}
+
+build() {
+    cmake \
+        -GNinja \
+        -Wno-dev \
+        -S "$pkgname-$pkgver" \
+        -B build \
+        -DCMAKE_BUILD_TYPE=plain \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_INSTALL_LIBDIR=lib \
+        -DCMAKE_CXX_STANDARD=17 \
+        -Ddisable32bit=true \
+        -DBUILD_TESTS=OFF \
+        -DWILL_RUN_TESTS=OFF
+    cmake --build build
+}
+
+check() {
+    cd build
+
+    if (( $(cat /proc/sys/kernel/perf_event_paranoid 2>/dev/null || echo 4) > 3 )); then
+        warning 'kernel.perf_event_paranoid blocks rr; skipping record/replay smoke test'
+        return 0
+    fi
+
+    cat > "$srcdir/smoke.c" <<'EOF'
+#include <stdio.h>
+int main(void) {
+    unsigned long x = 0;
+    for (unsigned i = 0; i < 10000000; i++)
+        x = x * 31 + i;
+    printf("%lu\n", x);
+    return 0;
+}
+EOF
+    cc -O2 -g "$srcdir/smoke.c" -o "$srcdir/smoke"
+
+    # rr's trace dir env var is _RR_TRACE_DIR (leading underscore)
+    export _RR_TRACE_DIR="$srcdir/smoke-trace"
+    rm -rf "$_RR_TRACE_DIR"
+    if ! ./bin/rr record "$srcdir/smoke" >"$srcdir/smoke-record.log" 2>&1; then
+        if grep -q "Permission denied to use 'perf_event_open'" "$srcdir/smoke-record.log"; then
+            warning 'perf_event_open denied by kernel policy or a security agent (e.g. CrowdStrike Falcon); skipping record/replay smoke test'
+            return 0
+        fi
+        cat "$srcdir/smoke-record.log"
+        return 1
+    fi
+
+    printf 'set pagination off\nset confirm off\ncontinue\necho REPLAY_OK\nquit\n' > "$srcdir/smoke.gdb"
+    ./bin/rr replay -x "$srcdir/smoke.gdb" 2>&1 | tee "$srcdir/smoke-replay.log"
+    grep -Eq 'REPLAY_OK|successfully finished' "$srcdir/smoke-replay.log"
+}
+
+package() {
+    DESTDIR="$pkgdir" cmake --install build
+
+    install -Dm644 "$pkgname-$pkgver/LICENSE" \
+        "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+
+    install -Dm644 "$pkgname-$pkgver/scripts/zen_workaround.service" \
+        "$pkgdir/usr/lib/systemd/system/zen_workaround.service"
+    install -Dm755 "$pkgname-$pkgver/scripts/zen_workaround.py" \
+        "$pkgdir/usr/share/zen_workaround/zen_workaround.py"
+}

@@ -22,6 +22,14 @@ Original packages maintained in this repository include:
 | `bunny-cli-bin` | binary | Installs the upstream prebuilt bunny.net CLI for Linux x86_64/aarch64 |
 | `colgrep` | source | Built locally with host-native optimizations (`-march=native`, `-mtune=native`, Rust `target-cpu=native`) |
 | `colgrep-bin` | binary | Installs the upstream prebuilt Linux x86_64 release |
+| `fframes` | source | Builds the `cargo-fframes` video project generator; renderers compile inside each generated project |
+| `frida-server-bin` | binary | Installs the upstream prebuilt `frida-server` for root-level instrumentation of the local system |
+| `frida-core` | source | Builds `libfrida-core` (QuickJS backend) at the exact version pinned by Luma's upstream CI; consumed by `luma-bin` in place of the frida runtime bundled in upstream's .deb. Version is coupled to Luma's release pins, not latest frida |
+| `luma-bin` | binary (hybrid) | The official Frida GUI from upstream's Ubuntu 26.04 build, minus its bundled frida runtime (provided by `frida-core` instead); only the Swift runtime stays bundled, as Arch has no system Swift. A full source build is parked until upstream's next release, which replaces the gir2swift bindings stack that cannot handle current GTK/HarfBuzz/radare2 |
+| `swift-bin` | binary | Rolling swift.org toolchain (latest stable Swift, Ubuntu 24.04 build) under `/opt/swift-<major.minor>`; owns the interactive PATH default. Pinned toolchains install beside it |
+| `swift-6.2-bin` | binary | Swift 6.2 toolchain from swift.org, pinned to Luma's upstream `SWIFT_VERSION`; currently unconsumed after the Luma source build was parked — kept for the next upstream release, whose new bindings architecture may make source builds viable |
+| `frida-tools` | source (Python sdist) | Frida CLI tools (`frida`, `frida-trace`, `frida-ps`, …) built from the PyPI sdist, which ships the prebuilt REPL/tracer agents |
+| `python-frida-bin` | binary (Python wheel) | Installs the official PyPI wheels of the `frida` Python bindings, which bundle the frida-core runtime |
 | `obsidian-headless-bin` | npm binary | Installs the npm-published CLI and locally builds the `better-sqlite3` native addon |
 | `pi-coding-agent-bin` | binary | Installs the upstream prebuilt Linux x86_64 release from `badlogic/pi-mono` |
 | `rocm-gfx1151-bin` | stable binary SDK | Installs AMD ROCm Core SDK 7.14 for gfx1151 with verified component metadata and repaired LLVM runtime files |
@@ -33,6 +41,8 @@ Original packages maintained in this repository include:
 | `meshtool` | source | Mesh manipulation tool, commit-pinned snapshot (upstream has no tags since 2019) with gzip, OpenMP and `-march=native` host tuning enabled |
 | `meshalyzer` | source | openCARP OpenGL visualizer + headless `meglyzer` (EGL), commit-pinned snapshot; VTK support disabled |
 | `hipfort-gfx1151` | source | Installs hipFORT 0.8.0 from its ROCm 7.14.0 source release with AMD Flang |
+| `mlir` | source | MLIR 22.1.8 built against system LLVM 22 with Python (nanobind) bindings installed into the system interpreter's site-packages; carries the upstream nanobind 3 compile fix plus a multi-DSO runtime fix |
+| `rr` | source | Record-and-replay debugger 5.9.0; carries the termio build fix and the upstream Strix Halo (Zen 5) CPU-id backport, both already on master. check() record/replay smoke test skips when perf_event_open is denied by kernel policy or the host's CrowdStrike Falcon agent |
 
 ## Layout
 
@@ -51,6 +61,28 @@ Regenerate `.SRCINFO` after changing a `PKGBUILD`:
 cd <pkgname>
 makepkg --printsrcinfo > .SRCINFO
 ```
+
+Check and apply upstream updates across the whole repository with
+[`update-all.py`](update-all.py) (Python 3.11+, no third-party dependencies). It
+refreshes upstream versions through nvchecker and reports, per package:
+
+- recipes that lag their upstream version (`upstream -> recipe`), and
+- recipes that are newer than the locally installed package
+  (`installed -> recipe`) — rebuild those with `cd <pkgname> && makepkg -sirc`
+  to apply the update to this system.
+
+```bash
+./update-all.py --status   # three-way report: upstream / recipe / installed
+./update-all.py            # report, then bump outdated recipes
+./update-all.py --commit   # … and git commit the bumps
+./update-all.py pkg…       # limit to named packages
+```
+
+`--init` reseeds `old.json` after adding packages, `--take pkg` acknowledges a
+manually bumped version, `--json` emits a machine-readable report, and
+`--no-fetch` reuses the existing `new.json` offline. nvchecker runs via `uvx`
+when not installed natively; a GitHub token is read from `keyfile.toml`
+(seeded from `NVCHECKER_GITHUB_TOKEN`).
 
 Build locally:
 

@@ -1,10 +1,57 @@
 [__config__]
 oldver = "old.json"
 newver = "new.json"
+# GitHub token lives in this gitignored keyfile (see keyfile.toml.example).
+# Create it once:  printf '[keys]\n"github.com" = "ghp_<classic-pat>"\n' > keyfile.toml
+# update-all.py also writes it from NVCHECKER_GITHUB_TOKEN/GITHUB_TOKEN.
+keyfile = "keyfile.toml"
 
-[colgrep]
+# =============================================================================
+# nvchecker sources for every package in this repository (except arcana-git,
+# which is built from a local upstream and intentionally untracked).
+#
+# Source types used:
+#   github  — upstream GitHub releases/tags
+#   pypi    — Python packages
+#   npm     — npm registry
+#   gitlab  — upstream GitLab tags
+#   cmd     — shell command (used for JetBrains, which has no native source)
+#   aur     — AUR package version. Used only for proprietary upstreams that
+#             expose no public version feed (Crossover, NoMachine, VueScan,
+#             WinBox, Nordic tools, Sublime Merge, J-Link, STM32CubeMX). The AUR
+#             version is a freshness signal, not a recipe refresh; the strip
+#             pattern below removes the leading epoch and trailing pkgrel so
+#             only the bare pkgver is recorded.
+#   regex   — parse a directory listing (EDK2 Fedora koji).
+#   manual  — no discoverable upstream version. Login/license-gated downloads,
+#             commit-pinned VCS packages, frozen legacy lines, nightly/curated
+#             builds, and packages whose pkgver is coupled to extra metadata
+#             nvchecker cannot resolve. Bump these by hand; nvchecker will never
+#             report a delta for them.
+#
+# Every key equals its package directory name, since update-all.py passes that
+# name to .github/scripts/update-package.sh.
+# =============================================================================
+
+# ---- GitHub: releases with a "v" prefix -------------------------------------
+[luma-bin]
 source = "github"
-github = "lightonai/next-plaid"
+github = "frida/luma"
+use_max_tag = true
+# The repo also tags QEMU builds and other side releases; keep plain semver
+# tags, and note the release assets embed the distro name — bumps need the
+# .deb URL re-checked against the newest release's asset list.
+include_regex = '^\d+\.\d+\.\d+$'
+
+[archlinux-java-run]
+source = "github"
+github = "michaellass/archlinux-java-run"
+use_max_tag = true
+prefix = "v"
+
+[atuin-desktop-bin]
+source = "github"
+github = "atuinsh/desktop"
 use_latest_release = true
 prefix = "v"
 
@@ -14,18 +61,410 @@ github = "BunnyWay/cli"
 use_latest_release = true
 prefix = "v"
 
+[colgrep]
+source = "github"
+github = "lightonai/next-plaid"
+use_latest_release = true
+prefix = "v"
+
 [colgrep-bin]
 source = "github"
 github = "lightonai/next-plaid"
 use_latest_release = true
 prefix = "v"
 
-[pi-coding-agent-bin]
+[expresslrs-configurator-bin]
 source = "github"
-github = "badlogic/pi-mono"
+github = "ExpressLRS/ExpressLRS-Configurator"
 use_latest_release = true
 prefix = "v"
 
+[fframes]
+source = "github"
+github = "dmtrKovalenko/fframes"
+use_latest_release = true
+prefix = "v"
+
+[frida-server-bin]
+source = "github"
+github = "frida/frida"
+use_latest_release = true
+
+[herdr-bin]
+source = "github"
+github = "ogulcancelik/herdr"
+use_latest_release = true
+prefix = "v"
+
+[jefferson]
+source = "github"
+github = "onekey-sec/jefferson"
+use_latest_release = true
+prefix = "v"
+
+[libdeep_filter_ladspa-bin]
+source = "github"
+github = "Rikorose/DeepFilterNet"
+use_latest_release = true
+prefix = "v"
+
+[nrfconnect-appimage]
+source = "github"
+github = "NordicSemiconductor/pc-nrfconnect-launcher"
+use_latest_release = true
+prefix = "v"
+
+[nrf-udev]
+source = "github"
+github = "NordicSemiconductor/nrf-udev"
+use_latest_release = true
+prefix = "v"
+
+[ov]
+source = "github"
+github = "noborus/ov"
+use_latest_release = true
+prefix = "v"
+
+[pi-coding-agent-bin]
+source = "github"
+github = "earendil-works/pi"
+use_latest_release = true
+prefix = "v"
+
+[rua]
+source = "github"
+github = "vn971/rua"
+use_max_tag = true
+prefix = "v"
+
+[ryzenadj]
+source = "github"
+github = "FlyGoat/RyzenAdj"
+use_latest_release = true
+prefix = "v"
+
+[scc-bin]
+source = "github"
+github = "boyter/scc"
+use_latest_release = true
+prefix = "v"
+
+[zephyr-sdk]
+source = "github"
+github = "zephyrproject-rtos/sdk-ng"
+use_latest_release = true
+prefix = "v"
+
+# ---- GitHub: tag without "v" prefix, or tag filtering needed ----------------
+[libudev0-shim]
+source = "github"
+github = "archlinux/libudev0-shim"
+use_max_tag = true
+prefix = "v"
+
+[pandoc-bin]
+source = "github"
+github = "jgm/pandoc"
+use_latest_release = true
+
+[pico-sdk]
+source = "github"
+github = "raspberrypi/pico-sdk"
+use_max_tag = true
+include_regex = '^\d+\.\d+\.\d+$'
+
+[picotool]
+# PKGBUILD derives pkgver from the tag with dashes -> dots.
+source = "github"
+github = "raspberrypi/picotool"
+use_latest_release = true
+from_pattern = '-'
+to_pattern = '.'
+
+[rr]
+# Tags are bare X.Y.Z; keep the include_regex as a guard against stray tags
+# (e.g. target-wine-*). 5.9.0 carries two local patches (termio build fix,
+# Strix Halo CPU id) — both landed on master, so drop them on the 5.10 bump.
+source = "github"
+github = "rr-debugger/rr"
+use_max_tag = true
+include_regex = '^\d+\.\d+\.\d+$'
+
+[oss-cad-suite-build-bin]
+# Release tags are dates (YYYY-MM-DD); pkgver strips the dashes.
+source = "github"
+github = "YosysHQ/oss-cad-suite-build"
+use_latest_release = true
+from_pattern = '(\d{4})-(\d{2})-(\d{2})'
+to_pattern = '\1\2\3'
+
+["llama.cpp-gfx1151"]
+# Upstream tags builds as bNNNN (and also master-<hash>); keep only bNNNN.
+source = "github"
+github = "ggml-org/llama.cpp"
+use_max_tag = true
+include_regex = '^b\d+$'
+
+[hipfort-gfx1151]
+# Track ROCm release tags (rocm-X.Y.Z), ignoring the date-based dev tags.
+source = "github"
+github = "ROCm/hipfort"
+use_max_tag = true
+include_regex = 'rocm-\d+\.\d+\.\d+'
+prefix = "rocm-"
+
+[rocm-gfx1151-bin]
+source = "github"
+github = "ROCm/ROCm"
+use_max_tag = true
+include_regex = 'rocm-\d+\.\d+\.\d+'
+prefix = "rocm-"
+
+# ---- PyPI -------------------------------------------------------------------
+[frida-tools]
+source = "pypi"
+pypi = "frida-tools"
+
+[mpremote]
+source = "pypi"
+pypi = "mpremote"
+
+[python-devicetree]
+source = "pypi"
+pypi = "devicetree"
+
+[python-frida-bin]
+source = "pypi"
+pypi = "frida"
+
+[python-lzallright]
+source = "pypi"
+pypi = "lzallright"
+
+[python-nrf_regtool]
+source = "pypi"
+pypi = "nrf-regtool"
+
+[python-pykwalify]
+source = "pypi"
+pypi = "pykwalify"
+
+[python-svada]
+source = "pypi"
+pypi = "svada"
+
+[python-west]
+source = "pypi"
+pypi = "west"
+
+# pinned manually: swift-6.2-bin follows luma's upstream SWIFT_VERSION pin
+# and frida-core follows luma's FRIDA_CORE_REF (see luma/PKGBUILD) — bump
+# both together with luma, to that release's CI pins.
+[frida-core]
+source = "manual"
+manual = "17.15.4"
+
+[swift-6.2-bin]
+source = "manual"
+manual = "6.2"
+
+# ---- GitHub: Swift releases (swift-<version>-RELEASE tags) -------------------
+[swift-bin]
+source = "github"
+github = "apple/swift"
+use_max_tag = true
+# apple/swift also tags snapshots and unrelated components; keep plain
+# swift-X.Y(.Z)-RELEASE tags. Download paths use the version verbatim in
+# both the directory and filename, so a plain pkgver rewrite finds the file.
+include_regex = '^swift-\d+\.\d+(\.\d+)?-RELEASE$'
+prefix = "swift-"
+suffix = "-RELEASE"
+
+# ---- npm --------------------------------------------------------------------
 [obsidian-headless-bin]
 source = "npm"
 npm = "obsidian-headless"
+
+[playwright-cli]
+source = "npm"
+npm = "@playwright/cli"
+
+# ---- GitLab -----------------------------------------------------------------
+[nrf-connect-sdk-installer]
+source = "gitlab"
+gitlab = "hellesvik/nrf-connect-sdk-installer"
+use_max_tag = true
+prefix = "v"
+
+# ---- JetBrains (no native source; query the public releases API) ------------
+[clion]
+source = "cmd"
+cmd = "curl -fsSL 'https://data.services.jetbrains.com/products/releases?code=CL&latest=true&type=release' | jq -r '.CL[0].version'"
+
+[datagrip]
+source = "cmd"
+cmd = "curl -fsSL 'https://data.services.jetbrains.com/products/releases?code=DG&latest=true&type=release' | jq -r '.DG[0].version'"
+
+[dataspell]
+source = "cmd"
+cmd = "curl -fsSL 'https://data.services.jetbrains.com/products/releases?code=DS&latest=true&type=release' | jq -r '.DS[0].version'"
+
+[pycharm]
+# PyCharm Professional (code PCP).
+source = "cmd"
+cmd = "curl -fsSL 'https://data.services.jetbrains.com/products/releases?code=PCP&latest=true&type=release' | jq -r '.PCP[0].version'"
+
+[rustrover]
+source = "cmd"
+cmd = "curl -fsSL 'https://data.services.jetbrains.com/products/releases?code=RR&latest=true&type=release' | jq -r '.RR[0].version'"
+
+# ---- AUR (freshness signal; strip epoch and pkgrel) -------------------------
+[crossover]
+source = "aur"
+aur = "crossover"
+from_pattern = '^(?:[0-9]+:)?(.*?)-.*$'
+to_pattern = '\1'
+
+[google-cloud-cli]
+source = "aur"
+aur = "google-cloud-cli"
+from_pattern = '^(?:[0-9]+:)?(.*?)-.*$'
+to_pattern = '\1'
+
+[jlink-software-and-documentation]
+source = "aur"
+aur = "jlink-software-and-documentation"
+from_pattern = '^(?:[0-9]+:)?(.*?)-.*$'
+to_pattern = '\1'
+
+[nomachine]
+source = "aur"
+aur = "nomachine"
+from_pattern = '^(?:[0-9]+:)?(.*?)-.*$'
+to_pattern = '\1'
+
+[nrf5x-command-line-tools]
+source = "aur"
+aur = "nrf5x-command-line-tools"
+from_pattern = '^(?:[0-9]+:)?(.*?)-.*$'
+to_pattern = '\1'
+
+[nrfutil]
+source = "aur"
+aur = "nrfutil"
+from_pattern = '^(?:[0-9]+:)?(.*?)-.*$'
+to_pattern = '\1'
+
+[stm32cubemx]
+source = "aur"
+aur = "stm32cubemx"
+from_pattern = '^(?:[0-9]+:)?(.*?)-.*$'
+to_pattern = '\1'
+
+[sublime-merge]
+source = "aur"
+aur = "sublime-merge"
+from_pattern = '^(?:[0-9]+:)?(.*?)-.*$'
+to_pattern = '\1'
+
+[vuescan-bin]
+source = "aur"
+aur = "vuescan-bin"
+from_pattern = '^(?:[0-9]+:)?(.*?)-.*$'
+to_pattern = '\1'
+
+[winbox]
+source = "aur"
+aur = "winbox"
+from_pattern = '^(?:[0-9]+:)?(.*?)-.*$'
+to_pattern = '\1'
+
+# ---- manual (no discoverable upstream version; bump by hand) ----------------
+[binaryninja-personal]
+# Downloaded through a Binary Ninja account; no public version feed.
+source = "manual"
+manual = "5.3.9757"
+
+[brother-hll2375dw]
+# Vendor driver at a fixed download path; rarely updated, no version API.
+source = "manual"
+manual = "4.0.0"
+
+[edk2-ovmf-fedora]
+# pkgver is coupled to a specific Fedora release + rpm release in the source
+# URL. Check koji for the latest fc build and update _rpmRelease too:
+#   https://kojipkgs.fedoraproject.org/packages/edk2/
+source = "manual"
+manual = "20260213"
+
+[falcon-sensor]
+# CrowdStrike falcon sensor; downloaded through a customer login.
+source = "manual"
+manual = "7.39.0"
+
+[lib32-libpng12]
+# Legacy libpng 1.2 line; 1.2.59 is the final 1.2 release (frozen since 2019).
+source = "manual"
+manual = "1.2.59"
+
+[mathematica]
+# Wolfram installer downloaded through a license portal.
+source = "manual"
+manual = "15.0.1"
+
+[migraphx-gfx1151]
+# Source release tied to a specific ROCm tag (rocm-7.14); pkgver (2.16.0) is
+# MIGraphX's own version and does not match the source tag, so it cannot be
+# derived automatically.
+source = "manual"
+manual = "2.16.0"
+
+[openocd-raspberrypi-git]
+# -git package intentionally pinned to specific upstream commits.
+source = "manual"
+manual = "v0.12.0.r27.gcf9c0b4"
+
+[rocm-nightly-gfx1151-bin]
+# Nightly build; the version embeds a date and is curated manually to avoid
+# pulling a multi-GB tarball on every run.
+source = "manual"
+manual = "10.0.0a20260730"
+
+[sioyek-dev]
+# -dev package intentionally pinned to specific upstream commits.
+source = "manual"
+manual = "2.0.0.r1113.g552008ac"
+
+[stlink-server]
+# ST installer downloaded through a license click-through.
+source = "manual"
+manual = "2.1.1"
+
+[stm32cubeide]
+# ST installer downloaded through a license click-through.
+source = "manual"
+manual = "2.2.0"
+
+[stm32cubemonucpd]
+# ST installer downloaded through a license click-through.
+source = "manual"
+manual = "1.4.0"
+
+[stm32cubemx2]
+# ST installer downloaded through a license click-through.
+source = "manual"
+manual = "1.0.1"
+
+[stm32cubeprog]
+# ST installer downloaded through a license click-through.
+source = "manual"
+manual = "2.22.0"
+
+[zoom]
+# Proprietary; /client/latest/ redirects to the CDN but there is no public
+# version feed (the REST endpoint is bot-blocked), and the 4-component build
+# number is not derivable from any machine-readable source. To bump:
+#   curl -sIL https://zoom.us/client/latest/zoom_x86_64.pkg.tar.xz
+source = "manual"
+manual = "7.2.0.5705"
