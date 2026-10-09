@@ -1,0 +1,75 @@
+# Maintainer: Guillaume Ausset <guillaume+arch@ausset.me>
+
+pkgname=gritql
+pkgver=0.0.3
+pkgrel=1
+pkgdesc='GritQL declarative query language for searching, linting, and modifying code (grit CLI)'
+arch=('x86_64' 'aarch64')
+url='https://github.com/biomejs/gritql'
+license=('MIT')
+depends=('gcc-libs' 'glibc' 'zlib')
+makedepends=('git' 'cargo')
+provides=('gritql')
+# /usr/bin/grit collides with the unrelated 'grit' AUR package
+conflicts=('grit' 'gritql-git' 'gritql-bin')
+# Distro LTO puts GCC bitcode into the tree-sitter grammar C archives, which
+# breaks linking of the Rust workspace
+options=('!lto')
+_tag="v$pkgver"
+source=(
+    "$pkgname::git+$url.git#tag=$_tag"
+    'disable-telemetry-by-default.patch'
+)
+sha256sums=('SKIP'
+            '8489cb4e38801ece61478af5b4b135960f73a8b89e8d24158f009ff4ca20fc11')
+
+# Upstream tags the whole monorepo with the npm package's version (v0.0.x)
+# while the Rust workspace inside carries its own 0.5.x version; the git tag
+# is the only release anchor and nvchecker tracks it via use_latest_release.
+
+prepare() {
+    cd "$pkgname"
+    patch -Np1 -i "$srcdir/disable-telemetry-by-default.patch"
+    # Tree-sitter grammars and the vendored tree-sitter facade live in git
+    # submodules, which the GitHub release archives do not contain.
+    git submodule update --init --recursive
+    # Arch uses the system rust toolchain, not rustup; drop the upstream pin.
+    rm -f rust-toolchain.toml
+    cargo fetch --locked --target "$(rustc -vV | sed -n 's/host: //p')"
+}
+
+build() {
+    cd "$pkgname"
+    # The vendored OpenSSL bakes its build-script OUT_DIR into the binary as
+    # the compiled-in module search path, and generated OUT_DIR sources leak
+    # their paths through file!(). Keep the cargo target dir outside $srcdir
+    # (as a sibling that does not share its path prefix) and remap both, so
+    # the package neither references $srcdir nor the user's build tree more
+    # than the vendored OpenSSL absolutely requires.
+    export CARGO_TARGET_DIR="${startdir}/build-target"
+    export RUSTFLAGS="${RUSTFLAGS} --remap-path-prefix=${srcdir}=. --remap-path-prefix=${CARGO_TARGET_DIR}=."
+    # The CLI binary crate is named 'grit' (crates/cli_bin); default features
+    # keep external JS functions, workflows and the (manifest-gated, inert
+    # under /usr) updater machinery.
+    cargo build --release --frozen -p grit
+}
+
+check() {
+    cd "$pkgname"
+    "${startdir}/build-target/release/grit" --help >/dev/null
+
+    # Smoke test: an inline pattern must rewrite a JS file
+    local _smokedir="$(mktemp -d)"
+    printf 'console.log("hi");\n' > "$_smokedir/smoke.js"
+    ( cd "$_smokedir" && "${startdir}/build-target/release/grit" apply \
+        '`console.log($m)` => `winston.log($m)`' smoke.js ) >/dev/null
+    grep -q 'winston.log' "$_smokedir/smoke.js"
+    rm -rf "$_smokedir"
+}
+
+package() {
+    cd "$pkgname"
+    install -Dm755 "${startdir}/build-target/release/grit" "$pkgdir/usr/bin/grit"
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+    install -Dm644 README.md "$pkgdir/usr/share/doc/$pkgname/README.md"
+}

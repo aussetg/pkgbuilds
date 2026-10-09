@@ -1,0 +1,17 @@
+--- a/crates/cli/src/analytics.rs
++++ b/crates/cli/src/analytics.rs
+@@ -222,9 +222,11 @@
+ }
+ 
+ pub fn is_telemetry_disabled() -> bool {
+-    env::var("GRIT_TELEMETRY_DISABLED")
+-        .unwrap_or_else(|_| "false".to_owned())
+-        .parse::<bool>()
++    // Distro build (Arch gritql): the PostHog analytics backend belongs to the
++    // defunct Grit cloud service. Never spawn the telemetry worker unless the
++    // user explicitly opts back in with GRIT_TELEMETRY_ENABLED.
++    !env::var("GRIT_TELEMETRY_ENABLED")
++        .map(|v| v == "1" || v.eq_ignore_ascii_case("true"))
+         .unwrap_or(false)
+ }
+ 
