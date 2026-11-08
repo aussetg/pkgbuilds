@@ -8,6 +8,11 @@ fi
 
 pkgdir=$1
 newver=$2
+if [[ -z "$newver" || "$newver" =~ [[:space:]:/-] ]]; then
+  echo "invalid pkgver: $newver" >&2
+  exit 1
+fi
+
 script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)
 repo_root=$(cd -- "${script_dir}/../.." && pwd -P)
 pkgpath="${repo_root}/${pkgdir}"
@@ -29,6 +34,28 @@ run_cmd() {
 if [[ $(id -u) -eq 0 ]] && id builder >/dev/null 2>&1; then
   chown -R builder:builder "$pkgpath"
 fi
+
+# Keep the recipe and its metadata in sync if an updater or download fails.
+backup_dir=$(mktemp -d)
+cp -p -- "$pkgpath/PKGBUILD" "$backup_dir/PKGBUILD"
+if [[ -f "$pkgpath/.SRCINFO" ]]; then
+  cp -p -- "$pkgpath/.SRCINFO" "$backup_dir/.SRCINFO"
+fi
+
+finish() {
+  local status=$?
+  if (( status != 0 )); then
+    cp -p -- "$backup_dir/PKGBUILD" "$pkgpath/PKGBUILD"
+    if [[ -f "$backup_dir/.SRCINFO" ]]; then
+      cp -p -- "$backup_dir/.SRCINFO" "$pkgpath/.SRCINFO"
+    else
+      rm -f -- "$pkgpath/.SRCINFO"
+    fi
+  fi
+  rm -rf -- "$backup_dir"
+  exit "$status"
+}
+trap finish EXIT
 
 updater_py="${script_dir}/update-${pkgdir}.py"
 updater_sh="${script_dir}/update-${pkgdir}.sh"

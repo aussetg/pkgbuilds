@@ -34,6 +34,16 @@ jobs:
       - name: Install nvchecker
         run: pip install nvchecker
 
+      - name: Test metadata validation
+        run: python -m unittest discover -s .github/scripts -p 'test_*.py'
+
+      - name: Configure nvchecker authentication
+        env:
+          NVCHECKER_GITHUB_TOKEN: ${{ secrets.NVCHECKER_GITHUB_TOKEN || github.token }}
+        run: |
+          umask 077
+          printf '[keys]\n"github.com" = "%s"\n' "$NVCHECKER_GITHUB_TOKEN" > keyfile.toml
+
       - name: Check for updates
         id: check
         run: |
@@ -151,8 +161,11 @@ jobs:
       - name: Update old.json
         env:
           UPDATES_JSON: ${{ needs.check-updates.outputs.updates }}
+          NVCHECKER_GITHUB_TOKEN: ${{ secrets.NVCHECKER_GITHUB_TOKEN || github.token }}
         run: |
           set -euo pipefail
+          umask 077
+          printf '[keys]\n"github.com" = "%s"\n' "$NVCHECKER_GITHUB_TOKEN" > keyfile.toml
           nvchecker -c nvchecker.toml
           echo "$UPDATES_JSON" | jq -r '.[].name' | while read -r pkg; do
             nvtake -c nvchecker.toml "$pkg"

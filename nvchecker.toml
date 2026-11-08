@@ -282,7 +282,7 @@ pypi = "west"
 source = "manual"
 manual = "17.15.4"
 
-[swift-6.2-bin]
+["swift-6.2-bin"]
 source = "manual"
 manual = "6.2"
 
@@ -295,8 +295,8 @@ use_max_tag = true
 # swift-X.Y(.Z)-RELEASE tags. Download paths use the version verbatim in
 # both the directory and filename, so a plain pkgver rewrite finds the file.
 include_regex = '^swift-\d+\.\d+(\.\d+)?-RELEASE$'
-prefix = "swift-"
-suffix = "-RELEASE"
+from_pattern = '^swift-(.+)-RELEASE$'
+to_pattern = '\1'
 
 # ---- npm --------------------------------------------------------------------
 [obsidian-headless-bin]

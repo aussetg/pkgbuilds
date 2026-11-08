@@ -1,0 +1,71 @@
+# Maintainer: Guillaume Ausset <guillaume+arch@ausset.me>
+#
+# Rolling swift.org toolchain: always the latest stable Swift for Ubuntu
+# 24.04 (the closest official build to Arch). Versioned toolchains live in
+# side-by-side packages (swift-6.2-bin, …) under their own
+# /opt/swift-<major.minor> prefixes; this package owns the interactive
+# default through /etc/profile.d.
+#
+# When Swift's major.minor moves, the /opt prefix moves with it (it is
+# derived from pkgver), and pacman replaces the old tree wholesale on
+# upgrade. To keep an older toolchain as well, install the matching
+# swift-<version>-bin package, which claims no global PATH entry.
+#
+# The Ubuntu binaries expect libncurses.so.6, which Arch only ships as the
+# ABI-compatible wide-char libncursesw.so.6. Every toolchain binary carries
+# a RUNPATH into lib/swift/linux, so a single symlink there makes the whole
+# toolchain work. Nothing is added to the system loader path: the toolchain
+# also bundles libxml2/libcurl/... and ldconfig searches its cache before
+# /usr/lib, so exposing those directories system-wide would let toolchain
+# copies shadow system libraries.
+#
+# lldb ships verbatim but is not fully functional on Arch (it wants Ubuntu's
+# libedit/libpython sonames).
+
+pkgname=swift-bin
+pkgver=6.4.0
+pkgrel=1
+pkgdesc='Swift toolchain from swift.org (official Ubuntu 24.04 build) — the latest release, with pinned versions available as swift-<version>-bin'
+arch=('x86_64')
+url='https://www.swift.org/'
+license=('Apache-2.0')
+depends=('glibc' 'gcc-libs' 'ncurses' 'curl')
+provides=("swift=${pkgver}")
+# Only the AUR source toolchains conflict; pinned swift-<version>-bin
+# packages install to their own prefixes and coexist.
+conflicts=('swift' 'swift-language')
+options=('!strip' '!debug')
+
+source=("https://download.swift.org/swift-${pkgver}-release/ubuntu2404/swift-${pkgver}-RELEASE/swift-${pkgver}-RELEASE-ubuntu24.04.tar.gz")
+sha256sums=('69f7b2b4dbce6090b6c92194b71149a057e16269093b5a9dded38afc4a05094e')
+
+package() {
+  # The upstream layout (usr/bin + usr/lib/...) is flattened; the binaries'
+  # relative RUNPATHs ($ORIGIN/../lib/swift/linux) survive. The prefix is
+  # major.minor — robust both to two-component ("6.5") and three-component
+  # ("6.4.0") pkgvers, where ${pkgver%.*} would strip too much or too
+  # little.
+  local _v
+  IFS=. read -r -a _v <<<"${pkgver}"
+  local _root="${pkgdir}/opt/swift-${_v[0]}.${_v[1]}"
+
+  install -dm755 "${_root}"
+  cp -a --no-preserve=ownership \
+    "${srcdir}/swift-${pkgver}-RELEASE-ubuntu24.04/usr/." "${_root}/"
+
+  # ncurses soname shim, resolved through the toolchain's own RUNPATH.
+  ln -s /usr/lib/libncursesw.so.6 "${_root}/lib/swift/linux/libncurses.so.6"
+
+  # Own the default PATH entry; regenerated whenever pkgver (and with it the
+  # prefix) changes.
+  install -Dm755 /dev/null "${pkgdir}/etc/profile.d/swift-bin.sh"
+  printf 'export PATH=/opt/swift-%s.%s/bin:$PATH\n' "${_v[0]}" "${_v[1]}" \
+    > "${pkgdir}/etc/profile.d/swift-bin.sh"
+
+  local license_dir
+  license_dir="$(find "${_root}" -maxdepth 3 -type d -iname '*license*' -print -quit)"
+  if [[ -n "${license_dir}" ]]; then
+    cp -a --no-preserve=ownership "${license_dir}/." \
+      "${pkgdir}/usr/share/licenses/${pkgname}/"
+  fi
+}
